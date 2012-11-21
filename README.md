@@ -31,7 +31,6 @@ All paths should be from root, not relative, unless the command has an optional 
 
 ##To Do##
 
-* Figure out why it doesn't work without `js/jquery.js` - really have no idea
 * Make `filesystem.onInitFs(fs)` private
 * Improve `filesystem.errorHandler(e)` and make private
 * Make `FileSystem()` into a reusable object (change `filesystem` references into `this` and `this.parent`)

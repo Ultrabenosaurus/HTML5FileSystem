@@ -1,6 +1,6 @@
 var filesystem;
 
-document.onready = function(){
+window.onload = function(){
 	FileSystem();
 	filesystem.request(PERSISTENT);
 };
