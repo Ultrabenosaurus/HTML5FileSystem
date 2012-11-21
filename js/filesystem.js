@@ -105,6 +105,15 @@ function FileSystem(){
 				}, function(e){
 					filesystem.errorHandler(e);
 				});
+			},
+			copy:function(source, destination){
+				filesystem.copy('directory', source, destination);
+			},
+			move:function(source, destination){
+				filesystem.move('directory', source, destination);
+			},
+			rename:function(old, _new){
+				filesystem.move('directory', old, _new);
 			}
 		},
 		file:{
@@ -193,16 +202,36 @@ function FileSystem(){
 			},
 			upload:function(id, multiple){
 				
+			},
+			copy:function(source, destination){
+				filesystem.copy('file', source, destination);
+			},
+			move:function(source, destination){
+				filesystem.move('file', source, destination);
+			},
+			rename:function(old, _new){
+				filesystem.move('file', old, _new);
 			}
 		},
-		copy:function(source, destination, type){
-			
+		copy:function(type, source, destination){
+			switch(type){
+				case 'file':
+					
+					break;
+				case 'directory':
+					
+					break;
+			}
 		},
-		move:function(source, destination, type){
-			
-		},
-		rename:function(old, _new, type){
-			filesystem.move(old, _new, type);
+		move:function(type, source, destination){
+			switch(type){
+				case 'file':
+					
+					break;
+				case 'directory':
+					
+					break;
+			}
 		},
 		properties:function(type, path, success){
 			if(type && path && success){
