@@ -1,15 +1,14 @@
-var filesystem;
-
 window.onload = function(){
-	FileSystem();
+	filesystem = FileSystem();
 	filesystem.request(PERSISTENT);
 };
 
 function FileSystem(){
-	filesystem = {
+	var filesystem = {
 		quota:5*1024*1024,
 		request:function(type, size){
-			size = (size) ? size : filesystem.quota;
+			var type = (type) ? type : PERSISTENT;
+			var size = (size) ? size : filesystem.quota;
 			window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
 			window.webkitStorageInfo.requestQuota(type, size, function(grantedBytes) {
 				filesystem.quota = grantedBytes;
@@ -51,10 +50,11 @@ function FileSystem(){
 					msg = 'Unknown Error';
 					break;
 			};
-			console.log('Error: ' + msg);
+			console.error('Error: ' + msg);
 		},
 		directory:{
 			create:function(path, rootDir){
+				var folders;
 				if(typeof path == 'string'){
 					folders = path.split('/');
 				} else {
@@ -67,17 +67,15 @@ function FileSystem(){
 				if(!rootDir){
 					rootDir = filesystem.root;
 				}
-				return rootDir.getDirectory(folders[0], {create: true}, function(dirEntry){
+				rootDir.getDirectory(folders[0], {create: true}, function(dirEntry){
 					if(folders.length){
 						folders = toArray(folders);
 						folders.shift();
 						filesystem.directory.create(folders, dirEntry);
 					}
 					filesystem.directory.read(dirEntry.fullPath);
-					return true;
 				}, function(e){
 					filesystem.errorHandler(e);
-					return false;
 				});
 			},
 			delete:function(path){
@@ -87,11 +85,9 @@ function FileSystem(){
 						filesystem.directory.read(path+'../');
 					}, function(e){
 						filesystem.errorHandler(e);
-						return false;
 					});
 				}, function(e){
 					filesystem.errorHandler(e);
-					return false;
 				});
 			},
 			read:function(path){
@@ -105,80 +101,130 @@ function FileSystem(){
 						listResults(toArray(results).sort(), dirEntry.fullPath);
 					}, function(e){
 						filesystem.errorHandler(e);
-						return false;
 					});
 				}, function(e){
 					filesystem.errorHandler(e);
-					return false;
 				});
 			}
 		},
 		file:{
 			create:function(path){
 				var path = path;
-				folders = path.split('/');
-				filename = folders.pop();
+				var folders = path.split('/');
+				var filename = folders.pop();
 				folders = toArray(folders);
 				filesystem.directory.create(folders);
-				return filesystem.root.getDirectory(folders.join('/'), {create: false, exclusive: true}, function(dirEntry){
-					return dirEntry.getFile(filename, {create: true}, function(fileEntry){
+				filesystem.root.getDirectory(folders.join('/'), {create: false, exclusive: true}, function(dirEntry){
+					dirEntry.getFile(filename, {create: true}, function(fileEntry){
 						filesystem.directory.read(dirEntry.fullPath);
-						return true;
 					}, function(e){
 						filesystem.errorHandler(e);
 						filesystem.file.create(path);
 					});
 				}, function(e){
+					filesystem.errorHandler(e);
 					setTimeout(function(){filesystem.file.create(path);}, 50);
-					return false;
 				});
 			},
 			delete:function(path){
-				folders = path.split('/');
-				filename = folders.pop();
-				folder = toArray(folders).join('/')+'/';
-				return filesystem.root.getFile(path, {create: false}, function(fileEntry) {
-					return fileEntry.remove(function() {
+				var folders = path.split('/');
+				var filename = folders.pop();
+				var folder = toArray(folders).join('/')+'/';
+				filesystem.root.getFile(path, {create: false}, function(fileEntry) {
+					fileEntry.remove(function() {
 						filesystem.directory.read(folder);
-						return true;
 					}, function(e){
 						filesystem.errorHandler(e);
-						return false;
 					});
 				}, function(e){
 					filesystem.errorHandler(e);
-					return false;
 				});
 			},
-			read:function(path){
-				
+			read:function(path, success){
+				filesystem.root.getFile(path, {create: false}, function(fileEntry){
+					fileEntry.file(function(file){
+						var reader = new FileReader();
+						reader.onloadend = success;
+						reader.readAsText(file);
+					}, function(e){
+						filesystem.errorHandler(e);
+					})
+				}, function(e){
+					filesystem.errorHandler(e);
+				});
 			},
-			write:function(path, data, append){
-				
+			write:function(path, data, success, append){
+				var append = append || false,
+					path = path,
+					data = data,
+					folders = path.split('/'),
+					filename = folders.pop();
+				if(!append){
+					this.delete(path);
+					this.create(path);
+				}
+				folders = toArray(folders);
+				filesystem.directory.create(folders);
+				filesystem.root.getDirectory(folders.join('/'), {create: false, exclusive: true}, function(dirEntry){
+					dirEntry.getFile(filename, {create: false, exclusive: true}, function(fileEntry){
+						fileEntry.createWriter(function(fileWriter){
+							fileWriter.onwriteend = success;
+							fileWriter.onerror = function(e){
+								filesystem.errorHandler(e);
+							};
+							if(append){
+								fileWriter.seek(fileWriter.length);
+							}
+							var blob = new Blob([data], {type: 'text/plain'});
+							fileWriter.write(blob);
+						}, function(e){
+							filesystem.errorHandler(e);
+						});
+					}, function(e){
+						filesystem.errorHandler(e);
+						filesystem.file.create(path);
+						filesystem.file.write(path, data, append);
+					});
+				}, function(e){
+					filesystem.errorHandler(e);
+					filesystem.directory.create(folders.join('/'));
+					filesystem.file.write(path, data, append);
+				});
 			},
 			upload:function(id, multiple){
 				
 			}
 		},
-		copy:function(source, destination){
+		copy:function(source, destination, type){
 			
 		},
-		move:function(source, destination){
+		move:function(source, destination, type){
 			
 		},
-		rename:function(old, _new){
-			filesystem.move(old, _new);
+		rename:function(old, _new, type){
+			filesystem.move(old, _new, type);
 		},
 		properties:function(path){
 			
 		},
 		url:{
-			get:function(path){
-				
+			get:function(path, success){
+				var path = path;
+				filesystem.root.getFile(path, {create: false}, function(fileEntry){
+					success(fileEntry.toURL());
+				}, function(e){
+					filesystem.errorHandler(e);
+				});
 			},
-			resolve:function(url){
-				
+			resolve:function(url, success){
+				window.resolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
+				window.resolveLocalFileSystemURL(url, function(fileEntry){
+					success(fileEntry.fullPath);
+				}, function(e){
+					filesystem.errorHandler(e);
+				});
 			}
 		}
 	};
+	return filesystem;
 }
