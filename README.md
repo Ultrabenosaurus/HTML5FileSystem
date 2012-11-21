@@ -22,7 +22,7 @@ Methods that take the `type` parameter are looking for a string that contains ei
 * `filesystem.file.delete(path)` - delete the file specified by path
 * `filesystem.file.write(path, data, success, [append])` - write to a file
     * attempt to create file if it doesn't exist
-    * optional third parameter, set to `true` to append
+    * optional `append` parameter, set to `true` to append
 * `filesystem.file.read(path, success)` - read a stored file and return its contents
 * `filesystem.properties(path, success)` - get the metadata of a file or directory
 * `filesystem.url.get(path, success)` - get the URL of a file or directory from a path
