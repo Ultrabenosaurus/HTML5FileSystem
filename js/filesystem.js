@@ -204,8 +204,29 @@ function FileSystem(){
 		rename:function(old, _new, type){
 			filesystem.move(old, _new, type);
 		},
-		properties:function(path){
-			
+		properties:function(type, path, success){
+			if(type && path && success){
+				switch(type){
+					case 'file':
+						filesystem.root.getFile(path, {create: false}, function(fileEntry){
+							fileEntry.getMetadata(success, function(e){
+								filesystem.errorHandler(e);
+							});
+						}, function(e){
+							filesystem.errorHandler(e);
+						});
+						break;
+					case 'directory':
+						filesystem.root.getDirectory(path, {create: false}, function(dirEntry) {
+							dirEntry.getMetadata(success, function(e){
+								filesystem.errorHandler(e);
+							});
+						}, function(e){
+							filesystem.errorHandler(e);
+						});
+						break;
+				}
+			}
 		},
 		url:{
 			get:function(path, success){
