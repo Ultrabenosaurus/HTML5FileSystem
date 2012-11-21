@@ -25,7 +25,7 @@ A JavaScript object to make interacting with the HTML5 FileSystem API super-easy
 * `filesystem.rename(old, new)` - rename a file or directory
 * `filesystem.properties(path)` - get the metadata of a file or directory
 * `filesystem.url.get(path)` - get the URL of a file or directory from a path
-* `filesystem.url.resolve(path)` - resolve the URL of a file or directory into a path
+* `filesystem.url.resolve(url)` - resolve the URL of a file or directory into a path
 
 All paths should be from root, not relative.
 
