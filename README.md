@@ -24,7 +24,7 @@ Methods that take the `type` parameter are looking for a string that contains ei
     * attempt to create file if it doesn't exist
     * optional `append` parameter, set to `true` to append
 * `filesystem.file.read(path, success)` - read a stored file and return its contents
-* `filesystem.properties(path, success)` - get the metadata of a file or directory
+* `filesystem.properties(type, path, success)` - get the metadata of a file or directory
 * `filesystem.url.get(path, success)` - get the URL of a file or directory from a path
 * `filesystem.url.resolve(url, success)` - resolve the URL of a file or directory into a path
 

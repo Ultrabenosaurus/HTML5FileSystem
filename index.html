@@ -36,6 +36,7 @@
 				<ul id='filelist'></ul>
 			</div>
 			<div id='right'>
+				<p>Test this library by using your browsers console.</p>
 				<p>Commands:
 					<ul>Implemented:
 						<li><pre>filesystem.request(type, [size])</pre> - request a FileSystem allocation</li>
@@ -44,24 +45,25 @@
 						<li><pre>filesystem.directory.delete(path)</pre> - recursively delete all files and directories along the path</li>
 						<li><pre>filesystem.file.create(path)</pre> - create a file, including its directory path</li>
 						<li><pre>filesystem.file.delete(path)</pre> - delete the file specified by path</li>
-					</ul>
-					<ul>Working on:
-						<li><pre>filesystem.file.read(path)</pre> - read a stored file and return its contents</li>
-						<li><pre>filesystem.file.write(path, data, [append])</pre> - write to a file
+						<li><pre>filesystem.file.write(path, data, success, [append])</pre> - write to a file
 							<ul>
 								<li>attempt to create file if it doesn't exist</li>
-								<li>optional third parameter, set to <pre>true</pre> to append</li>
+								<li>optional <pre>append</pre> parameter, set to <pre>true</pre> to append</li>
 							</ul>
 						</li>
-						<li><pre>filesystem.file.upload(id, [multiple])</pre> - upload one or more local files to the FileSystem</li>
-						<li><pre>filesystem.copy(source, destination)</pre> - copy a file or directory</li>
-						<li><pre>filesystem.move(source, destination)</pre> - move a file or directory</li>
-						<li><pre>filesystem.rename(old, new, [cwd])</pre> - rename a file or directory</li>
-						<li><pre>filesystem.properties(path)</pre> - get the metadata of a file or directory</li>
-						<li><pre>filesystem.url.get(path)</pre> - get the URL of a file or directory from a path</li>
-						<li><pre>filesystem.url.resolve(path)</pre> - resolve the URL of a file or directory into a path</li>
+						<li><pre>filesystem.file.read(path, success)</pre> - read a stored file and return its contents</li>
+						<li><pre>filesystem.properties(type, path, success)</pre> - get the metadata of a file or directory</li>
+						<li><pre>filesystem.url.get(path, success)</pre> - get the URL of a file or directory from a path</li>
+						<li><pre>filesystem.url.resolve(path, success)</pre> - resolve the URL of a file or directory into a path</li>
 					</ul>
-					All paths should be from root, not relative, unless the command has an optional <pre>[cwd]</pre> parameter.
+					<ul>Working on:
+						<li><pre>filesystem.file.upload(id, [multiple])</pre> - upload one or more local files to the FileSystem</li>
+						<li><pre>filesystem.copy(type, source, destination)</pre> - copy a file or directory</li>
+						<li><pre>filesystem.move(type, source, destination)</pre> - move a file or directory</li>
+						<li><pre>filesystem.rename(type, old, _new)</pre> - rename a file or directory</li>
+					</ul>
+					All paths should be from root, not relative.<br />
+					Methods that take the <pre>type</pre> parameter are looking for a string that contains either <pre>file</pre> or <pre>directory</pre> - giving any other value will cause them to fail, maybe silently.
 				</p>
 				<p>To Do:
 					<ul>
