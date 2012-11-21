@@ -166,11 +166,7 @@ function FileSystem(){
 		move:function(source, destination){
 			
 		},
-		rename:function(old, _new, cwd){
-			if(cwd){
-				old = (cwd.substring(-1) == '/') ? cwd+old : cwd+'/'+old;
-				_new = (cwd.substring(-1) == '/') ? cwd+_new : cwd+'/'+_new;
-			}
+		rename:function(old, _new){
 			filesystem.move(old, _new);
 		},
 		properties:function(path){
