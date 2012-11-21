@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset='utf-8' />
+	<style>
+	body{
+		font-family: Calibri, Helvetic, sans-serif;
+	}
+	pre{
+		display: inline;
+	}
+	ul{
+		list-style-type: none;
+	}
+	ul:not([id='filelist']) li:before{
+		content: "- ";
+	}
+	#container{
+		width: 1000px;
+		margin: 0 auto;
+	}
+	#left{
+		float: left;
+		width: 29%;
+	}
+	#right{
+		float: right;
+		width: 70%;
+	}
+	</style>
+	<title>Filesystem API</title>
+</head>
+	<body>
+		<div id='container'>
+			<div id='left'>
+				<ul id='filelist'></ul>
+			</div>
+			<div id='right'>
+				<p>Commands:
+					<ul>Implemented:
+						<li><pre>filesystem.request(type, [size])</pre> - request a FileSystem allocation</li>
+						<li><pre>filesystem.directory.read(path)</pre> - read the given path</li>
+						<li><pre>filesystem.directory.create(path)</pre> - create a directory path recursively</li>
+						<li><pre>filesystem.directory.delete(path)</pre> - recursively delete all files and directories along the path</li>
+						<li><pre>filesystem.file.create(path)</pre> - create a file, including its directory path</li>
+						<li><pre>filesystem.file.delete(path)</pre> - delete the file specified by path</li>
+					</ul>
+					<ul>Working on:
+						<li><pre>filesystem.file.read(path)</pre> - read a stored file and return its contents</li>
+						<li><pre>filesystem.file.write(path, data, [append])</pre> - write to a file
+							<ul>
+								<li>attempt to create file if it doesn't exist</li>
+								<li>optional third parameter, set to <pre>true</pre> to append</li>
+							</ul>
+						</li>
+						<li><pre>filesystem.file.upload(id, [multiple])</pre> - upload one or more local files to the FileSystem</li>
+						<li><pre>filesystem.copy(source, destination)</pre> - copy a file or directory</li>
+						<li><pre>filesystem.move(source, destination)</pre> - move a file or directory</li>
+						<li><pre>filesystem.rename(old, new, [cwd])</pre> - rename a file or directory</li>
+						<li><pre>filesystem.properties(path)</pre> - get the metadata of a file or directory</li>
+						<li><pre>filesystem.url.get(path)</pre> - get the URL of a file or directory from a path</li>
+						<li><pre>filesystem.url.resolve(path)</pre> - resolve the URL of a file or directory into a path</li>
+					</ul>
+					All paths should be from root, not relative, unless the command has an optional <pre>[cwd]</pre> parameter.
+				</p>
+				<p>To Do:
+					<ul>
+						<li>Make <pre>filesystem.onInitFs(fs)</pre> private</li>
+						<li>Improve <pre>filesystem.errorHandler(e)</pre> and make private</li>
+						<li>Make <pre>FileSystem()</pre> into a reusable object (change <pre>filesystem</pre> references into <pre>this</pre> and <pre>this.parent</pre>)</li>
+						<li>Investigate any other methods that are needed/could be helpful</li>
+					</ul>
+				</p>
+			</div>
+		</div>
+	</body>
+	<script src='js/jquery.js'></script>
+	<script src='js/functions.js'></script>
+	<script src='js/filesystem.js'></script>
+</html>
