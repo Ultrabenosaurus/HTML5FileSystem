@@ -15,19 +15,19 @@ A JavaScript object to make interacting with the HTML5 FileSystem API super-easy
 
 ###Working on###
 
-* `filesystem.file.read(path)` - read a stored file and return its contents
 * `filesystem.file.write(path, data, [append])` - write to a file
     * attempt to create file if it doesn't exist
     * optional third parameter, set to `true` to append
+* `filesystem.file.read(path)` - read a stored file and return its contents
 * `filesystem.file.upload(id, [multiple])` - upload one or more local files to the FileSystem
 * `filesystem.copy(source, destination)` - copy a file or directory
 * `filesystem.move(source, destination)` - move a file or directory
-* `filesystem.rename(old, new, [cwd])` - rename a file or directory
+* `filesystem.rename(old, new)` - rename a file or directory
 * `filesystem.properties(path)` - get the metadata of a file or directory
 * `filesystem.url.get(path)` - get the URL of a file or directory from a path
 * `filesystem.url.resolve(path)` - resolve the URL of a file or directory into a path
 
-All paths should be from root, not relative, unless the command has an optional `[cwd]` parameter.
+All paths should be from root, not relative.
 
 ##To Do##
 
