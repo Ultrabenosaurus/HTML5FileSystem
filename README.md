@@ -2,6 +2,8 @@
 
 A JavaScript object to make interacting with the HTML5 FileSystem API super-easy!
 
+All implemented methods are confirmed working in this branch.
+
 ##Commands##
 
 ###Implemented###
