@@ -33,15 +33,15 @@
 	<body>
 		<div id='container'>
 			<div id='left'>
-				<input type='file' id='files1' name='files1' />
-				<input type='file' id='files2' name='files2' />
-				<input type='file' id='files3' name='files3' />
+				<input type='file' id='files1' name='files1[]' multiple />
+				<input type='file' id='files1' name='files1[]' multiple />
+				<input type='file' id='files1' name='files1[]' multiple />
 				<ul id='filelist'></ul>
 			</div>
 			<div id='right'>
 				<p>Test this library by using your browsers console.</p>
 				<p>Commands:
-					<ul>Generic
+					<ul>Generic - only <code>request</code> is meant to be called directly
 						<li><code>filesystem.request(type, [size])</code> - request a FileSystem allocation</li>
 						<li><code>filesystem.init(fs)</code> - set initial variables, read root directory</li>
 						<li><code>filesystem.errorHandler(e)</code> - process errors (default: send to console)</li>
@@ -63,21 +63,25 @@
 						<li><code>filesystem.file.copy(source, destination)</code> - copy a file</li>
 						<li><code>filesystem.file.move(source, destination)</code> - move a file</li>
 						<li><code>filesystem.file.rename(dir, old, new)</code> - rename a file</li>
-						<li><code>filesystem.file.upload(dir, file, [success, [failure]])</code> - upload a file to the FileSystem</li>
+						<li><code>filesystem.file.upload(name, dir, [success, [failure]])</code> - upload one or more files to the FileSystem</li>
 						<li><code>filesystem.file.properties(path, success)</code> - get the metadata of a file</li>
 					</ul>
 					<ul>URL
 						<li><code>filesystem.url.get(path, success)</code> - get the URL of a file from a path</li>
 						<li><code>filesystem.url.resolve(url, success)</code> - resolve the URL of a file into a path</li>
 					</ul>
+					<ul>Support - not meant to be called directly
+						<li><code>filesystem.support.toArray(list)</code> - convert an object to an array</li>
+						<li><code>filesystem.support.listResults(entries, dir)</code> - output the results of <code>filesystem.directory.read()</code> to the webpage</li>
+						<li><code>filesystem.support.upload(dir, file, [success, [failure]])</code> - this method actually performs the upload, called by <code>filesystem.file.upload()</code></li>
+					</ul>
 					All paths should be from root, not relative, unless a <code>dir</code> parameter is required in which case all other paths should be relative to <code>dir</code>.<br />
 					All paths should be provided as strings, not DirectoryEntry objects.<br />
-					Any method that takes a <code>success</code> parameter requires this to be a valid callback, as the underlying API methods return <code>void</code> and rely on callbacks themselves so no natural return is possible.
+					Any method that takes <code>success</code> and/or <code>failure</code> parameters requires these to be valid callbacks, as the underlying API methods return <code>void</code> and rely on callbacks themselves so no natural return is possible.
 				</p>
 				<p>To Do:
 					<ul>
 						<li>Improve <code>filesystem.errorHandler(e)</code></li>
-						<li>Figure out how to upload multiple files at the same time</li>
 						<li>Add support for reading/writing other filetypes (for apps like web-based image editors)
 							<ul>
 								<li>Code this in a way that will allow others to easily add new definitions</li>
@@ -89,6 +93,5 @@
 			</div>
 		</div>
 	</body>
-	<script src='js/functions.js'></script>
 	<script src='js/filesystem.js'></script>
 </html>

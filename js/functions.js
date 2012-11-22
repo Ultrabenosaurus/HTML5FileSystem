@@ -39,7 +39,22 @@ function listResults(entries, dir) {
 	document.querySelector('#filelist').appendChild(fragment);
 }
 
-function getFiles(id){
-	input = document.getElementById(id);
-	return (input) ? input.files[0] : false;
+function getFiles(name){
+	inputs = document.getElementsByName(name);
+	files = [];
+	for(var i = 0, f; f = inputs[i]; i++){
+		if(typeof f !== 'undefined'){
+			files.push(f.files[0]);
+		}
+	}
+	return (files.length > 0) ? files : false;
+}
+
+function uploadFiles(name, filesystem, dir, success, failure){
+	files = getFiles(name);
+	if(files){
+		for(var i = 0, f; f = files[i]; i++){
+			filesystem.file.upload(dir, f, success, failure);
+		}
+	}
 }
