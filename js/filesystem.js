@@ -38,9 +38,6 @@ function FileSystem(){
 					'md',
 					'markdown'
 				],
-				'application/x-msdownload':[
-					'exe'
-				],
 				'image/png':[
 					'png'
 				],
@@ -50,6 +47,9 @@ function FileSystem(){
 				'image/jpeg':[
 					'jpg',
 					'jpeg'
+				],
+				'audio/mp3':[
+					'mp3'
 				]
 			};
 			filesystem.directory.read('/');
@@ -77,6 +77,36 @@ function FileSystem(){
 					break;
 			};
 			console.error('Error: ' + msg);
+		},
+		info:function(){
+			window.webkitStorageInfo.queryUsageAndQuota(PERSISTENT, function(current, total){
+				console.log('current: ', current, ' bytes');
+				console.log('total: ', total, ' bytes');
+				console.log('remaining: ', (total-current), ' bytes');
+			});
+		},
+		registerFiletype:function(options){
+			if(typeof options === 'object'){
+				for(var mime in options){
+					console.log(mime);
+					var types = options[mime];
+					console.log(types);
+					if(filesystem.filetypes.hasOwnProperty(mime)){
+						for(var i = 0, len = types.length; i < len; i++){
+							ftype = types[i];
+							console.log(ftype);
+							var currTypes = filesystem.filetypes[mime];
+							if(!currTypes.contains(ftype)){
+								filesystem.filetypes[mime].push(ftype);
+							}
+						}
+					} else {
+						filesystem.filetypes[mime] = types;
+					}
+				}
+			} else {
+				return false;
+			}
 		},
 		directory:{
 			create:function(path, root){
@@ -229,11 +259,16 @@ function FileSystem(){
 				});
 			},
 			read:function(path, success){
+				var mime = filesystem.support.filetypeSearch(path.split('.')[1]);
 				filesystem.root.getFile(path, {create: false}, function(fileEntry){
 					fileEntry.file(function(file){
 						var reader = new FileReader();
 						reader.onloadend = success;
-						reader.readAsText(file);
+						if(mime.match('text.*')) {
+							reader.readAsText(file);
+						} else {
+							reader.readAsArrayBuffer(file);
+						}
 					}, function(e){
 						filesystem.errorHandler(e);
 					})
@@ -242,6 +277,7 @@ function FileSystem(){
 				});
 			},
 			write:function(path, data, success, append){
+				var mime = filesystem.support.filetypeSearch(path.split('.')[1]);
 				var append = append || false,
 					path = path,
 					data = data,
@@ -263,7 +299,7 @@ function FileSystem(){
 							if(append){
 								fileWriter.seek(fileWriter.length);
 							}
-							var blob = new Blob([data], {type: 'text/plain'});
+							var blob = new Blob([data], {type: mime});
 							fileWriter.write(blob);
 						}, function(e){
 							filesystem.errorHandler(e);
@@ -425,6 +461,16 @@ function FileSystem(){
 						filesystem.support.upload(dir, file, success, failure);
 					});
 				}
+			},
+			filetypeSearch:function(ext){
+				for(var mime in filesystem.filetypes){
+					var types = filesystem.filetypes[mime];
+					for(var type in types){
+						if(type === ext.toLowerCase()){
+							return mime;
+						}
+					}
+				}
 			}
 		}
 	};
@@ -433,6 +479,16 @@ function FileSystem(){
 			for(var i = 0, len = this.length; i < len; ++i){
 				fn.call(scope, this[i], i, this);
 			}
+		}
+	}
+	if(!Array.prototype.contains){
+		Array.prototype.contains = function(term){
+			for(var i = 0, len = this.length; i < len; i++){
+				if(this[i] === term){
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 	return filesystem;
