@@ -63,7 +63,7 @@
 						<li><code>filesystem.file.copy(source, destination)</code> - copy a file</li>
 						<li><code>filesystem.file.move(source, destination)</code> - move a file</li>
 						<li><code>filesystem.file.rename(dir, old, new)</code> - rename a file</li>
-						<li><code>filesystem.file.upload(id, [multiple])</code> - upload a file to the FileSystem</li>
+						<li><code>filesystem.file.upload(dir, file, [success, [failure]])</code> - upload a file to the FileSystem</li>
 						<li><code>filesystem.file.properties(path, success)</code> - get the metadata of a file</li>
 					</ul>
 					<ul>URL
@@ -71,6 +71,7 @@
 						<li><code>filesystem.url.resolve(url, success)</code> - resolve the URL of a file or directory into a path</li>
 					</ul>
 					All paths should be from root, not relative, unless a <code>dir</code> parameter is required in which case all other paths should be relative to <code>dir</code>.<br />
+					All paths should be provided as strings, not DirectoryEntry objects.<br />
 					Any method that takes a <code>success</code> parameter requires this to be a valid callback, as the underlying API methods return <code>void</code> and rely on callbacks themselves so no natural return is possible.
 				</p>
 				<p>To Do:

@@ -53,7 +53,7 @@ function FileSystem(){
 			console.error('Error: ' + msg);
 		},
 		directory:{
-			create:function(path, rootDir){
+			create:function(path, root){
 				var folders;
 				if(typeof path == 'string'){
 					folders = path.split('/');
@@ -64,16 +64,20 @@ function FileSystem(){
 					folders = toArray(folders);
 					folders.shift();
 				}
-				if(!rootDir){
-					rootDir = filesystem.root;
+				if(!root){
+					root = filesystem.root.fullPath;
 				}
-				rootDir.getDirectory(folders[0], {create: true}, function(dirEntry){
-					if(folders.length){
-						folders = toArray(folders);
-						folders.shift();
-						filesystem.directory.create(folders, dirEntry);
-					}
-					filesystem.directory.read(dirEntry.fullPath);
+				filesystem.root.getDirectory(root, {}, function(rootEntry){
+					rootEntry.getDirectory(folders[0], {create: true}, function(dirEntry){
+						if(folders.length){
+							folders = toArray(folders);
+							folders.shift();
+							filesystem.directory.create(folders, dirEntry.fullPath);
+						}
+						filesystem.directory.read(dirEntry.fullPath);
+					}, function(e){
+						filesystem.errorHandler(e);
+					});
 				}, function(e){
 					filesystem.errorHandler(e);
 				});

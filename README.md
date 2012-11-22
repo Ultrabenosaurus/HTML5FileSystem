@@ -6,9 +6,9 @@ A JavaScript object to make interacting with the HTML5 FileSystem API super-easy
 
 ## Notes ##
 
-All paths should be from root, not relative, unless a `dir` parameter is required in which case all other paths should be relative to `dir`.
+All paths should be from root, not relative, unless a `dir` parameter is required in which case all other paths should be relative to `dir`. Also, all paths should be provided as strings, not DirectoryEntry objects.
 
-Any method that takes a `success` parameter requires this to be a valid callback, as the underlying API methods return `void` and rely on callbacks themselves so no natural return is possible.
+Any method that takes `success` and/or `failure` parameters requires these to be valid callbacks, as the underlying API methods return `void` and rely on callbacks themselves so no natural return is possible.
 
 ## Commands ##
 
@@ -41,7 +41,7 @@ Any method that takes a `success` parameter requires this to be a valid callback
 * `filesystem.file.copy(source, destination)` - copy a file
 * `filesystem.file.move(source, destination)` - move a file
 * `filesystem.file.rename(dir, old, new)` - rename a file
-* `filesystem.file.upload(id, [multiple])` - upload a local file to the FileSystem
+* `filesystem.file.upload(dir, file, [success, [failure]])` - upload a local file to the FileSystem
 * `filesystem.file.properties(path, success)` - get the metadata of a file
 
 **URL**
