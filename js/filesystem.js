@@ -26,6 +26,32 @@ function FileSystem(){
 			filesystem.root = fs.root;
 			filesystem.dirReader = filesystem.root.createReader();
 			filesystem.entries = [];
+			filesystem.filetypes = {
+				'text/plain':[
+					'txt',
+					'html',
+					'htm',
+					'php',
+					'js',
+					'asp',
+					'aspx',
+					'md',
+					'markdown'
+				],
+				'application/x-msdownload':[
+					'exe'
+				],
+				'image/png':[
+					'png'
+				],
+				'image/gif':[
+					'gif'
+				],
+				'image/jpeg':[
+					'jpg',
+					'jpeg'
+				]
+			};
 			filesystem.directory.read('/');
 		},
 		errorHandler:function(e){
