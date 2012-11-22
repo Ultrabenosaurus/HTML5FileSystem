@@ -1,5 +1,5 @@
 window.onload = function(){
-	filesystem = FileSystem();
+	filesystem = new FileSystem();
 	filesystem.request(PERSISTENT);
 };
 
@@ -82,7 +82,7 @@ function FileSystem(){
 					filesystem.errorHandler(e);
 				});
 			},
-			delete:function(path){
+			del:function(path){
 				path = (path.substring(-1) == '/') ? path : path+'/';
 				filesystem.root.getDirectory(path, {create: false}, function(dirEntry) {
 					dirEntry.removeRecursively(function() {
@@ -188,7 +188,7 @@ function FileSystem(){
 					setTimeout(function(){filesystem.file.create(path);}, 50);
 				});
 			},
-			delete:function(path){
+			del:function(path){
 				var folders = path.split('/');
 				var filename = folders.pop();
 				var folder = filesystem.support.toArray(folders).join('/')+'/';
@@ -222,7 +222,7 @@ function FileSystem(){
 					folders = path.split('/'),
 					filename = folders.pop();
 				if(!append){
-					this.delete(path);
+					this.del(path);
 					this.create(path);
 				}
 				folders = filesystem.support.toArray(folders);
