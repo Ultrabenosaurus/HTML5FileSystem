@@ -44,8 +44,8 @@ Any method that takes `success` and/or `failure` parameters requires these to be
 
 **URL**
 
-* `filesystem.url.get(path, success)` - get the URL of a file or directory from a path
-* `filesystem.url.resolve(url, success)` - resolve the URL of a file or directory into a path
+* `filesystem.url.get(path, success)` - get the URL of a file from a path
+* `filesystem.url.resolve(url, success)` - resolve the URL of a file into a path
 
 ## To Do ##
 
