@@ -33,6 +33,9 @@
 	<body>
 		<div id='container'>
 			<div id='left'>
+				<input type='file' id='files1' name='files1' />
+				<input type='file' id='files2' name='files2' />
+				<input type='file' id='files3' name='files3' />
 				<ul id='filelist'></ul>
 			</div>
 			<div id='right'>
@@ -55,27 +58,26 @@
 					<ul>File
 						<li><code>filesystem.file.create(path)</code> - create a file, including its directory path</li>
 						<li><code>filesystem.file.delete(path)</code> - delete the file specified by path</li>
-						<li><code>filesystem.file.read(path, success)</code> - read a stored file and return its contents</li>
-						<li><code>filesystem.file.write(path, data, success, [append])</code> - write to a file</li>
+						<li><code>filesystem.file.read(path, success)</code> - read a stored text file and return its contents</li>
+						<li><code>filesystem.file.write(path, data, success, [append])</code> - write to a text file</li>
 						<li><code>filesystem.file.copy(source, destination)</code> - copy a file</li>
 						<li><code>filesystem.file.move(source, destination)</code> - move a file</li>
 						<li><code>filesystem.file.rename(dir, old, new)</code> - rename a file</li>
+						<li><code>filesystem.file.upload(id, [multiple])</code> - upload a file to the FileSystem</li>
 						<li><code>filesystem.file.properties(path, success)</code> - get the metadata of a file</li>
 					</ul>
 					<ul>URL
 						<li><code>filesystem.url.get(path, success)</code> - get the URL of a file or directory from a path</li>
 						<li><code>filesystem.url.resolve(url, success)</code> - resolve the URL of a file or directory into a path</li>
 					</ul>
-					<ul>In progress
-						<li><code>filesystem.file.upload(id, [multiple])</code> - upload one or more local files to the FileSystem</li>
-					</ul>
 					All paths should be from root, not relative, unless a <code>dir</code> parameter is required in which case all other paths should be relative to <code>dir</code>.<br />
 					Any method that takes a <code>success</code> parameter requires this to be a valid callback, as the underlying API methods return <code>void</code> and rely on callbacks themselves so no natural return is possible.
 				</p>
 				<p>To Do:
 					<ul>
-						<li>Improve <pre>filesystem.errorHandler(e)</pre></li>
-						<li>Add support for other filetypes
+						<li>Improve <code>filesystem.errorHandler(e)</code></li>
+						<li>Figure out how to upload multiple files at the same time</li>
+						<li>Add support for reading/writing other filetypes (for apps like web-based image editors)
 							<ul>
 								<li>Code this in a way that will allow others to easily add new definitions</li>
 							</ul>
