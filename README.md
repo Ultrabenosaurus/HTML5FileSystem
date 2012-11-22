@@ -58,6 +58,7 @@ Any method that takes `success` and/or `failure` parameters requires these to be
 ## To Do ##
 
 * Improve `filesystem.errorHandler(e)`
+* Show progress of uploads
 * Add support for reading/writing other filetypes (for apps like web-based image editors)
     * Code this in a way that will allow others to easily add new definitions
 * Investigate any other methods that are needed/could be helpful
