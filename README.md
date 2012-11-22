@@ -1,18 +1,18 @@
-#FileSystem#
+# FileSystem #
 
 **THIS IS THE DEVELOPMENT VERSION - NOT GUARANTEED TO WORK EVEN IF METHODS ARE IMPLEMENTED**
 
 A JavaScript object to make interacting with the HTML5 FileSystem API super-easy!
 
-##Notes##
+## Notes ##
 
 All paths should be from root, not relative, unless a `dir` parameter is required in which case all other paths should be relative to `dir`.
 
 Any method that takes a `success` parameter requires this to be a valid callback, as the underlying API methods return `void` and rely on callbacks themselves so no natural return is possible.
 
-##Commands##
+## Commands ##
 
-###Implemented###
+### Implemented ###
 
 **Generic**
 
@@ -48,18 +48,18 @@ Any method that takes a `success` parameter requires this to be a valid callback
 * `filesystem.url.get(path, success)` - get the URL of a file or directory from a path
 * `filesystem.url.resolve(url, success)` - resolve the URL of a file or directory into a path
 
-###Working on###
+### Working on ###
 
 * `filesystem.file.upload(id, [multiple])` - upload one or more local files to the FileSystem
 
 
-##To Do##
+## To Do ##
 
 * Improve `filesystem.errorHandler(e)`
 * Add support for other filetypes
     * Code this in a way that will allow others to easily add new definitions
 * Investigate any other methods that are needed/could be helpful
 
-##License##
+## License ##
 
 See included LICENSE.md file.
