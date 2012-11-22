@@ -46,18 +46,20 @@
 					<ul>Directory
 						<li><code>filesystem.directory.create(path)</code> - create a directory path recursively</li>
 						<li><code>filesystem.directory.delete(path)</code> - recursively delete all files and directories along the path</li>
-						<li><code>filesystem.directory.copy(source, destination)</code> - copy a directory</li>
-						<li><code>filesystem.directory.rename(dir, old, new)</code> - rename a directory</li>
 						<li><code>filesystem.directory.read(path)</code> - read the given path</li>
+						<li><code>filesystem.directory.copy(source, destination)</code> - copy a directory</li>
+						<li><code>filesystem.directory.move(source, destination)</code> - move a directory</li>
+						<li><code>filesystem.directory.rename(dir, old, new)</code> - rename a directory</li>
 						<li><code>filesystem.directory.properties(path, success)</code> - get the metadata of a directory</li>
 					</ul>
 					<ul>File
 						<li><code>filesystem.file.create(path)</code> - create a file, including its directory path</li>
 						<li><code>filesystem.file.delete(path)</code> - delete the file specified by path</li>
-						<li><code>filesystem.file.copy(source, destination)</code> - copy a file</li>
-						<li><code>filesystem.file.rename(dir, old, new)</code> - rename a file</li>
 						<li><code>filesystem.file.read(path, success)</code> - read a stored file and return its contents</li>
 						<li><code>filesystem.file.write(path, data, success, [append])</code> - write to a file</li>
+						<li><code>filesystem.file.copy(source, destination)</code> - copy a file</li>
+						<li><code>filesystem.file.move(source, destination)</code> - move a file</li>
+						<li><code>filesystem.file.rename(dir, old, new)</code> - rename a file</li>
 						<li><code>filesystem.file.properties(path, success)</code> - get the metadata of a file</li>
 					</ul>
 					<ul>URL
@@ -65,8 +67,6 @@
 						<li><code>filesystem.url.resolve(url, success)</code> - resolve the URL of a file or directory into a path</li>
 					</ul>
 					<ul>In progress
-						<li><code>filesystem.directory.move(source, destination)</code> - move a directory</li>
-						<li><code>filesystem.file.move(source, destination)</code> - move a file</li>
 						<li><code>filesystem.file.upload(id, [multiple])</code> - upload one or more local files to the FileSystem</li>
 					</ul>
 					All paths should be from root, not relative, unless a <code>dir</code> parameter is required in which case all other paths should be relative to <code>dir</code>.<br />
