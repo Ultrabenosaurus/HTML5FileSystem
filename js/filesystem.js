@@ -13,7 +13,7 @@ function FileSystem(){
 			window.webkitStorageInfo.requestQuota(type, size, function(grantedBytes) {
 				filesystem.quota = grantedBytes;
 				window.requestFileSystem(type, grantedBytes, function(fs){
-					filesystem.onInitFs(fs);
+					filesystem.init(fs);
 				}, function(e){
 					filesystem.errorHandler(e);
 				});
@@ -21,7 +21,7 @@ function FileSystem(){
 				filesystem.errorHandler(e);
 			});
 		},
-		onInitFs:function(fs){
+		init:function(fs){
 			filesystem.fs = fs;
 			filesystem.root = fs.root;
 			filesystem.dirReader = filesystem.root.createReader();
@@ -107,13 +107,51 @@ function FileSystem(){
 				});
 			},
 			copy:function(source, destination){
-				filesystem.copy('directory', source, destination);
+				var source = source || false, destination = destination || false;
+				if(source && destination){
+					filesystem.root.getDirectory(source, {create: false}, function(sourceEntry){
+						filesystem.root.getDirectory(destination, {create: false}, function(destEntry){
+							sourceEntry.copyTo(destEntry);
+							filesystem.directory.read(destEntry.fullPath);
+						}, function(e){
+							filesystem.errorHandler(e);
+							filesystem.directory.create(destination);
+							filesystem.directory.copy(source, destination);
+						});
+					}, function(e){
+						filesystem.errorHandler(e);
+					});
+				}
 			},
 			move:function(source, destination){
-				filesystem.move('directory', source, destination);
+				var source = source || false, destination = destination || false;
+				if(source && destination){
+					
+				}
 			},
-			rename:function(old, _new){
-				filesystem.move('directory', old, _new);
+			rename:function(dir, old, _new){
+				var old = old || false, _new = _new || false, dir = dir || '/';
+				if(old && _new && dir){
+					filesystem.root.getDirectory(dir, {create: false}, function(parent){
+						parent.getDirectory(old, {create: false}, function(dirEntry){
+							dirEntry.moveTo(parent, _new);
+							filesystem.directory.read(dir);
+						}, function(e){
+							filesystem.errorHandler(e);
+						});
+					}, function(e){
+						filesystem.errorHandler(e);
+					});
+				}
+			},
+			properties:function(path, success){
+				filesystem.root.getDirectory(path, {create: false}, function(dirEntry) {
+					dirEntry.getMetadata(success, function(e){
+						filesystem.errorHandler(e);
+					});
+				}, function(e){
+					filesystem.errorHandler(e);
+				});
 			}
 		},
 		file:{
@@ -204,57 +242,49 @@ function FileSystem(){
 				
 			},
 			copy:function(source, destination){
-				filesystem.copy('file', source, destination);
+				var source = source || false, destination = destination || false;
+				if(source && destination){
+					filesystem.root.getFile(source, {create: false}, function(fileEntry){
+						filesystem.root.getDirectory(destination, {create: false}, function(dirEntry){
+							fileEntry.copyTo(dirEntry);
+							filesystem.directory.read(dirEntry.fullPath);
+						}, function(e){
+							filesystem.errorHandler(e);
+							filesystem.directory.create(destination);
+							filesystem.file.copy(source, destination);
+						});
+					}, function(e){
+						filesystem.errorHandler(e);
+					});
+				}
 			},
 			move:function(source, destination){
-				filesystem.move('file', source, destination);
-			},
-			rename:function(old, _new){
-				filesystem.move('file', old, _new);
-			}
-		},
-		copy:function(type, source, destination){
-			switch(type){
-				case 'file':
+				var source = source || false, destination = destination || false;
+				if(source && destination){
 					
-					break;
-				case 'directory':
-					
-					break;
-			}
-		},
-		move:function(type, source, destination){
-			switch(type){
-				case 'file':
-					
-					break;
-				case 'directory':
-					
-					break;
-			}
-		},
-		properties:function(type, path, success){
-			if(type && path && success){
-				switch(type){
-					case 'file':
-						filesystem.root.getFile(path, {create: false}, function(fileEntry){
-							fileEntry.getMetadata(success, function(e){
-								filesystem.errorHandler(e);
-							});
-						}, function(e){
-							filesystem.errorHandler(e);
-						});
-						break;
-					case 'directory':
-						filesystem.root.getDirectory(path, {create: false}, function(dirEntry) {
-							dirEntry.getMetadata(success, function(e){
-								filesystem.errorHandler(e);
-							});
-						}, function(e){
-							filesystem.errorHandler(e);
-						});
-						break;
 				}
+			},
+			rename:function(dir, old, name){
+				dir = (dir.substring(-1) === '/') ? dir : dir+'/';
+				filesystem.root.getDirectory(dir, {create: false}, function(dirEntry){
+					dirEntry.getFile(old, {create: false}, function(fileEntry){
+						fileEntry.moveTo(dirEntry, name);
+						filesystem.directory.read(dir);
+					}, function(e){
+						filesystem.errorHandler(e);
+					});
+				}, function(e){
+					filesystem.errorHandler(e);
+				});
+			},
+			properties:function(path, success){
+				filesystem.root.getFile(path, {create: false}, function(fileEntry){
+					fileEntry.getMetadata(success, function(e){
+						filesystem.errorHandler(e);
+					});
+				}, function(e){
+					filesystem.errorHandler(e);
+				});
 			}
 		},
 		url:{
