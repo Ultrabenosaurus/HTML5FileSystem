@@ -53,7 +53,7 @@ function FileSystem(){
 			console.error('Error: ' + msg);
 		},
 		directory:{
-			create:function(path, rootDir){
+			create:function(path, root){
 				var folders;
 				if(typeof path == 'string'){
 					folders = path.split('/');
@@ -64,16 +64,20 @@ function FileSystem(){
 					folders = toArray(folders);
 					folders.shift();
 				}
-				if(!rootDir){
-					rootDir = filesystem.root;
+				if(!root){
+					root = filesystem.root.fullPath;
 				}
-				rootDir.getDirectory(folders[0], {create: true}, function(dirEntry){
-					if(folders.length){
-						folders = toArray(folders);
-						folders.shift();
-						filesystem.directory.create(folders, dirEntry);
-					}
-					filesystem.directory.read(dirEntry.fullPath);
+				filesystem.root.getDirectory(root, {}, function(rootEntry){
+					rootEntry.getDirectory(folders[0], {create: true}, function(dirEntry){
+						if(folders.length){
+							folders = toArray(folders);
+							folders.shift();
+							filesystem.directory.create(folders, dirEntry.fullPath);
+						}
+						filesystem.directory.read(dirEntry.fullPath);
+					}, function(e){
+						filesystem.errorHandler(e);
+					});
 				}, function(e){
 					filesystem.errorHandler(e);
 				});
@@ -98,7 +102,7 @@ function FileSystem(){
 					filesystem.dirReader = dirEntry.createReader();
 					filesystem.entries = [];
 					filesystem.dirReader.readEntries(function(results) {
-						listResults(toArray(results).sort(), dirEntry.fullPath);
+						listResults(toArray(results).sort(), dirEntry.fullPath); // external function used to display directory list
 					}, function(e){
 						filesystem.errorHandler(e);
 					});
@@ -126,7 +130,18 @@ function FileSystem(){
 			move:function(source, destination){
 				var source = source || false, destination = destination || false;
 				if(source && destination){
-					
+					filesystem.root.getDirectory(source, {create: false}, function(sourceEntry){
+						filesystem.root.getDirectory(destination, {create: false}, function(destEntry){
+							sourceEntry.moveTo(destEntry);
+							filesystem.directory.read(destination);
+						}, function(e){
+							filesystem.errorHandler(e);
+							filesystem.directory.create(destination);
+							filesystem.directory.move(source, destination);
+						});
+					}, function(e){
+						filesystem.errorHandler(e);
+					});
 				}
 			},
 			rename:function(dir, old, _new){
@@ -238,9 +253,6 @@ function FileSystem(){
 					filesystem.file.write(path, data, append);
 				});
 			},
-			upload:function(id, multiple){
-				
-			},
 			copy:function(source, destination){
 				var source = source || false, destination = destination || false;
 				if(source && destination){
@@ -253,7 +265,6 @@ function FileSystem(){
 							filesystem.directory.create(destination);
 							filesystem.file.copy(source, destination);
 						});
-					}, function(e){
 						filesystem.errorHandler(e);
 					});
 				}
@@ -261,7 +272,18 @@ function FileSystem(){
 			move:function(source, destination){
 				var source = source || false, destination = destination || false;
 				if(source && destination){
-					
+					filesystem.root.getFile(source, {create: false}, function(fileEntry){
+						filesystem.root.getDirectory(destination, {create: false}, function(dirEntry){
+							fileEntry.moveTo(dirEntry);
+							filesystem.directory.read(destination);
+						}, function(e){
+							filesystem.errorHandler(e);
+							filesystem.directory.create(destination);
+							filesystem.file.move(source, destination);
+						});
+					}, function(e){
+						filesystem.errorHandler(e);
+					});
 				}
 			},
 			rename:function(dir, old, name){
@@ -276,6 +298,44 @@ function FileSystem(){
 				}, function(e){
 					filesystem.errorHandler(e);
 				});
+			},
+			upload:function(dir, file, success, failure){
+				if(typeof file !== 'undefined'){
+					var ftype = file.type, fname = file.name, fmod = file.lastModifiedDate, fsize = file.size;
+					filesystem.root.getDirectory(dir, {create: false}, function(dirEntry){
+						filesystem.root.getFile(fname, {create: true}, function(fileEntry){
+							var reader = new FileReader();
+							reader.onloadend = function(theFile){
+								// console.log(theFile);
+								if(theFile.target.readyState == FileReader.DONE){
+									console.log('begin writing');
+									fileEntry.createWriter(function(fileWriter){
+										fileWriter.onwriteend = success || function(e){filesystem.directory.read(dir)};
+										fileWriter.onerror = failure || function(e){
+											filesystem.errorHandler(e);
+										};
+										var blob = new Blob([theFile.target.result], {type: ftype});
+										fileWriter.write(blob);
+									}, function(e){
+										filesystem.errorHandler(e);
+									});
+								}
+							};
+							reader.onerror = failure || function(e){
+								filesystem.errorHandler(e);
+							};
+							if(ftype.match('text.*')) {
+								reader.readAsText(file);
+							} else {
+								reader.readAsArrayBuffer(file);
+							}
+						}, function(e){
+							filesystem.errorHandler(e);
+						});
+					}, function(e){
+						filesystem.errorHandler(e);
+					});
+				}
 			},
 			properties:function(path, success){
 				filesystem.root.getFile(path, {create: false}, function(fileEntry){

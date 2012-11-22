@@ -38,3 +38,8 @@ function listResults(entries, dir) {
 
 	document.querySelector('#filelist').appendChild(fragment);
 }
+
+function getFiles(id){
+	input = document.getElementById(id);
+	return (input) ? input.files[0] : false;
+}
