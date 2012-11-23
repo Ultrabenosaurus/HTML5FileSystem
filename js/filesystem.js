@@ -378,7 +378,6 @@ function FileSystem(){
 			},
 			download:function(path){
 				var fname = path.split('/').pop();
-				fname = fname.replace(/ /g, '-');
 				filesystem.url.get(path, function(url){
 					var a = document.createElement('a');
 					a.style.display = 'none';
@@ -483,7 +482,7 @@ function FileSystem(){
 			},
 			upload:function(dir, file, success, failure){
 				if(typeof file !== 'undefined'){
-					var ftype = file.type, fname = file.name, fmod = file.lastModifiedDate, fsize = file.size;
+					var ftype = file.type, fname = file.name.replace(/ /g, '-'), fmod = file.lastModifiedDate, fsize = file.size;
 					filesystem.root.getDirectory(dir, {create: false}, function(dirEntry){
 						dirEntry.getFile(fname, {create: true}, function(fileEntry){
 							var reader = new FileReader();
