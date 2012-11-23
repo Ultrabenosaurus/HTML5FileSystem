@@ -1,6 +1,5 @@
 window.onload = function(){
 	filesystem = new FileSystem();
-	filesystem.settings.setQuota(512*1024*1024);
 	filesystem.request(window.PERSISTENT);
 };
 
@@ -528,6 +527,10 @@ function FileSystem(){
 								reader.onloadend = function(theFile){
 									if(theFile.target.readyState == FileReader.DONE){
 										fileEntry.createWriter(function(fileWriter){
+											fileWriter.onprogress = function(e){
+												var progBar = document.getElementById('progress_'+fname);
+												progBar.style.width = (e.loaded / e.total)*100+'%';
+											}
 											fileWriter.onwrite = function(e){
 												if(document.getElementById('progress_'+fname)){
 													var progBar = document.getElementById('progress_'+fname);
