@@ -78,7 +78,11 @@ Any method that takes `success` and/or `failure` parameters requires these to be
 
 ## To Do ##
 
-* Improve `filesystem.errorHandler(e)`
+* Transfer files between server and FileSystem
+* Look into ZIP formatting for whole directory and multi-file actions
+    * uploads
+    * downloads
+    * server transfers
 * Investigate any other methods that are needed/could be helpful
 
 ## License ##

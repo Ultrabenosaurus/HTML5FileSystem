@@ -72,6 +72,9 @@ function FileSystem(){
 			}
 			filesystem.directory.read('/');
 		},
+		clear:function(){
+			filesystem.directory.empty('/');
+		},
 		errorHandler:function(e, data){
 			var msg = '';
 			switch (e.code) {
@@ -98,9 +101,6 @@ function FileSystem(){
 			if(data){
 				console.warn(data);
 			}
-		},
-		clear:function(){
-			filesystem.directory.empty('/');
 		},
 		directory:{
 			create:function(path, root){
