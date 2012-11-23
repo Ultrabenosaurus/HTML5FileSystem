@@ -28,6 +28,9 @@ function FileSystem(){
 			filesystem.entries = [];
 			filesystem.directory.read('/');
 		},
+		clear:function(){
+			filesystem.directory.empty('/');
+		},
 		errorHandler:function(e){
 			var msg = '';
 			switch (e.code) {
@@ -299,6 +302,19 @@ function FileSystem(){
 					filesystem.errorHandler(e);
 				});
 			},
+			download:function(path){
+				var fname = path.split('/').pop();
+				filesystem.url.get(path, function(url){
+					var a = document.createElement('a');
+					a.style.display = 'none';
+					a.id = 'download_'+fname;
+					a.href = url;
+					a.download = fname;
+					document.getElementsByTagName('body')[0].appendChild(a);
+					a.click();
+					document.getElementsByTagName('body')[0].removeChild(document.getElementById('download_'+fname));
+				});
+			},
 			upload:function(name, dir, success, failure){
 				inputs = document.getElementsByName(name);
 				for(var i = 0, elem; elem = inputs[i]; i++){
@@ -407,6 +423,28 @@ function FileSystem(){
 			for(var i = 0, len = this.length; i < len; ++i){
 				fn.call(scope, this[i], i, this);
 			}
+		}
+	}
+	if(!Array.prototype.contains){
+		Array.prototype.contains = function(term){
+			"use strict";
+			for(var i = 0, len = this.length; i < len; i++){
+				if(this[i] === term){
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+	if(!Array.prototype.find){
+		Array.prototype.find = function(term){
+			"use strict";
+			for (var i = 0, len = this.length; i < len; i++) {
+				if (this[i] === term) {
+					return i;
+				}
+			}
+			return false;
 		}
 	}
 	return filesystem;
