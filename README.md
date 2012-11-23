@@ -18,6 +18,7 @@ Any method that takes `success` and/or `failure` parameters requires these to be
 
 * `filesystem.request(type, [size])` - request a FileSystem allocation
 * `filesystem.init(fs)` - set initial variables, read root directory
+* `filesystem.clear()` - deletes ALL files and directories in the FileSystem
 * `filesystem.errorHandler(e)` - process errors (default: send to console)
 
 **Directory**
@@ -42,6 +43,7 @@ Any method that takes `success` and/or `failure` parameters requires these to be
 * `filesystem.file.move(source, destination)` - move a file
 * `filesystem.file.rename(dir, old, new)` - rename a file
 * `filesystem.file.upload(name, dir, [success, [failure]])` - upload one or more local files to the FileSystem
+* `filesystem.file.download(path)` - force a file in the FileSystem to be downloaded (Chrome only)
 * `filesystem.file.properties(path, success)` - get the metadata of a file
 
 **URL**
