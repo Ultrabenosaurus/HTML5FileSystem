@@ -43,6 +43,7 @@
 				<p>Commands:
 					<ul>Generic - only <code>request</code> is meant to be called directly
 						<li><code>filesystem.request(type, [size])</code> - request a FileSystem allocation</li>
+						<li><code>filesystem.clear()</code> - deletes ALL files and directories in the FileSystem</li>
 						<li><code>filesystem.init(fs)</code> - set initial variables, read root directory</li>
 						<li><code>filesystem.errorHandler(e)</code> - process errors (default: send to console)</li>
 					</ul>
@@ -64,6 +65,7 @@
 						<li><code>filesystem.file.move(source, destination)</code> - move a file</li>
 						<li><code>filesystem.file.rename(dir, old, new)</code> - rename a file</li>
 						<li><code>filesystem.file.upload(name, dir, [success, [failure]])</code> - upload one or more files to the FileSystem</li>
+						<li><code>filesystem.file.download(path)</code> - force a file in the FileSystem to be downloaded (Chrome only)</li>
 						<li><code>filesystem.file.properties(path, success)</code> - get the metadata of a file</li>
 					</ul>
 					<ul>URL
