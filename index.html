@@ -30,6 +30,16 @@
 		float: right;
 		width: 70%;
 	}
+	.filesystem_progress{
+		height: 5px;
+		background-color: #2cc0d5;
+	}
+	.filesystem_progress.complete{
+		background-color: #63e44f;
+	}
+	.filesystem_progress.error{
+		background-color: #f53f16;
+	}
 	</style>
 	<title>Filesystem API</title>
 </head>
@@ -91,7 +101,8 @@
 					<ul id='support'><span onclick="toggle('support')">Support</span>
 						<li><code>filesystem.support.toArray(list)</code>* - convert an object to an array</li>
 						<li><code>filesystem.support.listResults(entries, dir)</code>* - output the results of <code>filesystem.directory.read()</code> to the webpage</li>
-						<li><code>filesystem.support.upload(dir, file, [success, [failure]])</code>* - this method actually performs the upload, called by <code>filesystem.file.upload()</code></li>
+						<li><code>filesystem.support.upload(dir, file, elem, [success, [failure]])</code>* - this method actually performs the upload, called by <code>filesystem.file.upload()</code></li>
+						<li><code>filesystem.support.multiPartUpload(dir, file, [success, [failure]])</code>* - if the file size is bigger than <code>filesystem.maxChunk</code> this function is called by `<code>filesystem.support.upload()</code></li>
 						<li><code>filesystem.support.filetypeSearch(ext)</code>* - searches registered filetypes and returns the mime or false</li>
 					</ul>
 					<ul id='extras'><span onclick="toggle('extras')">Extras</span> - not part of the `filesystem` object

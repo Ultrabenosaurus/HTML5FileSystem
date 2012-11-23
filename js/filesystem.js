@@ -1,5 +1,6 @@
 window.onload = function(){
 	filesystem = new FileSystem();
+	filesystem.settings.setQuota(512*1024*1024);
 	filesystem.request(window.PERSISTENT);
 };
 
@@ -66,6 +67,7 @@ function FileSystem(){
 					'mp3'
 				]
 			};
+			filesystem.maxChunk = 10*1024*1024;
 			filesystem.directory.read('/');
 		},
 		errorHandler:function(e, data){
@@ -367,12 +369,12 @@ function FileSystem(){
 					filesystem.errorHandler(e);
 				});
 			},
-			upload:function(name, dir, success, failure){
+			upload:function(name, dir, overwrite, success, failure){
 				inputs = document.getElementsByName(name);
 				for(var i = 0, elem; elem = inputs[i]; i++){
 					f = elem.files[0];
 					if(typeof f !== 'undefined'){
-						filesystem.support.upload(dir, f, success, failure);
+						filesystem.support.upload(dir, f, elem, success, failure);
 					}
 				}
 			},
@@ -480,33 +482,90 @@ function FileSystem(){
 				});
 				document.querySelector('#filelist').appendChild(fragment);
 			},
-			upload:function(dir, file, success, failure){
+			upload:function(dir, file, elem, success, failure){
 				if(typeof file !== 'undefined'){
 					var ftype = file.type, fname = file.name.replace(/ /g, '-'), fmod = file.lastModifiedDate, fsize = file.size;
 					filesystem.root.getDirectory(dir, {create: false}, function(dirEntry){
 						dirEntry.getFile(fname, {create: true}, function(fileEntry){
-							var reader = new FileReader();
-							reader.onloadend = function(theFile){
-								if(theFile.target.readyState == FileReader.DONE){
-									fileEntry.createWriter(function(fileWriter){
-										fileWriter.onwriteend = success || function(e){filesystem.directory.read(dir)};
-										fileWriter.onerror = failure || function(e){
-											filesystem.errorHandler(e);
-										};
-										var blob = new Blob([theFile.target.result], {type: ftype});
-										fileWriter.write(blob);
-									}, function(e){
-										filesystem.errorHandler(e);
-									});
-								}
-							};
-							reader.onerror = failure || function(e){
-								filesystem.errorHandler(e);
-							};
-							if(ftype.match('text.*')) {
-								reader.readAsText(file);
+							if(document.getElementById('progress_'+fname)){
+								var progBar = document.getElementById('progress_'+fname);
+								progBar.style.width = '0%';
 							} else {
-								reader.readAsArrayBuffer(file);
+								var progBar = document.createElement('div');
+								progBar.id = 'progress_'+fname;
+								progBar.className = 'filesystem_progress';
+								progBar.style.width = '0%';
+								elem.parentNode.insertBefore(progBar, elem.nextSibling);
+							}
+							filesystem.file.properties(fileEntry.fullPath, function(value){
+								if(value.size > 0){
+									tdir = (dir.substring(-1) === '/') ? dir : dir+'/';
+									filesystem.file.del(tdir+fname);
+									filesystem.file.create(tdir+fname);
+								}
+							});
+							if(fsize > filesystem.maxChunk){
+								filesystem.support.multiPartUpload(dir, file, success, failure);
+							} else {
+								var reader = new FileReader();
+								reader.onloadstart = function(e){
+									if(document.getElementById('progress_'+fname)){
+										var progBar = document.getElementById('progress_'+fname);
+										progBar.style.width = '0%';
+									} else {
+										var progBar = document.createElement('div');
+										progBar.id = 'progress_'+fname;
+										progBar.className = 'filesystem_progress';
+										progBar.style.width = '0%';
+										elem.parentNode.insertBefore(progBar, elem.nextSibling);
+									}
+								};
+								reader.onloadend = function(theFile){
+									if(theFile.target.readyState == FileReader.DONE){
+										fileEntry.createWriter(function(fileWriter){
+											fileWriter.onwrite = function(e){
+												if(document.getElementById('progress_'+fname)){
+													var progBar = document.getElementById('progress_'+fname);
+													progBar.className = progBar.className+' complete';
+													progBar.style.width = '100%';
+												}
+												if(success){
+													success(e);
+												}
+											}
+											fileWriter.onerror = function(e){
+												filesystem.errorHandler(e);
+												var progBar = document.getElementById('progress_'+fname);
+												progBar.className = progBar.className+' error';
+												progBar.style.width = '100%';
+												if(failure){
+													failure(e);
+												}
+											};
+											fileWriter.seek(fileWriter.length);
+											var blob = new Blob([theFile.target.result], {type: ftype});
+											fileWriter.write(blob);
+										}, function(e){
+											filesystem.errorHandler(e);
+										});
+									}
+								};
+								reader.onerror = function(e){
+									filesystem.errorHandler(e);
+									if(document.getElementById('progress_'+fname)){
+										var progBar = document.getElementById('progress_'+fname);
+										progBar.className = progBar.className+' error';
+										progBar.style.width = '100%';
+									}
+									if(failure){
+										failure(e);
+									}
+								};
+								if(ftype.match('text.*')) {
+									reader.readAsText(file);
+								} else {
+									reader.readAsArrayBuffer(file);
+								}
 							}
 						}, function(e){
 							filesystem.errorHandler(e);
@@ -517,6 +576,86 @@ function FileSystem(){
 						filesystem.support.upload(dir, file, success, failure);
 					});
 				}
+			},
+			multiPartUpload:function(dir, file, success, failure){
+				var ftype = file.type, fname = file.name.replace(/ /g, '-'), fmod = file.lastModifiedDate, fsize = file.size;
+				var tdir = (dir.substring(-1) === '/') ? dir : dir+'/';
+				var chunks = Math.ceil(fsize / filesystem.maxChunk), finalChunk = fsize % filesystem.maxChunk;
+				filesystem.root.getDirectory(dir, {create: false}, function(dirEntry){
+					dirEntry.getFile(fname, {create: true}, function(fileEntry){
+						filesystem.file.properties(fileEntry.fullPath, function(value){
+							var currSize = value.size;
+							if(currSize == fsize){
+								if(success){
+									success(fileEntry.fullPath, fsize, ftype);
+								}
+							} else {
+								var start = currSize;
+								var end = (fsize - currSize > filesystem.maxChunk) ? start+filesystem.maxChunk : fsize;
+								var reader = new FileReader();
+								reader.onloadend = function(theFile){
+									if(theFile.target.readyState == FileReader.DONE){
+										fileEntry.createWriter(function(fileWriter){
+											fileWriter.onwrite = function(e){
+												filesystem.file.properties(fileEntry.fullPath, function(value){
+													currSize = value.size;
+													if(currSize < fsize){
+														var progBar = document.getElementById('progress_'+fname);
+														progBar.style.width = (currSize/fsize)*100+'%';
+														filesystem.support.multiPartUpload(dir, file, success, failure);
+													} else {
+														var progBar = document.getElementById('progress_'+fname);
+														progBar.className = progBar.className+' complete';
+														progBar.style.width = '100%';
+														filesystem.directory.read(dir);
+													}
+												});
+											}
+											fileWriter.onerror = function(e){
+												filesystem.errorHandler(e);
+												var progBar = document.getElementById('progress_'+fname);
+												progBar.className = progBar.className+' error';
+												if(failure){
+													failure(e);
+												}
+											};
+											fileWriter.seek(fileWriter.length);
+											var wblob = new Blob([theFile.target.result], {type: ftype});
+											fileWriter.write(wblob);
+										}, function(e){
+											filesystem.errorHandler(e);
+											if(failure){
+												failure(e);
+											}
+										});
+									}
+								};
+								reader.onerror = function(e){
+									filesystem.errorHandler(e);
+									if(failure){
+										failure(e);
+									}
+								};
+								var rblob = file.slice(start, end);
+								if(ftype.match('text.*')){
+									reader.readAsText(rblob);
+								} else {
+									reader.readAsArrayBuffer(rblob);
+								}
+							}
+						});
+					}, function(e){
+						filesystem.errorHandler(e);
+						if(failure){
+							failure(e);
+						}
+					});
+				}, function(e){
+					filesystem.errorHandler(e);
+					if(failure){
+						failure(e);
+					}
+				});
 			},
 			filetypeSearch:function(ext){
 				for(var mime in filesystem.filetypes){

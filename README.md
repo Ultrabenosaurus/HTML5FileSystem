@@ -65,7 +65,8 @@ Any method that takes `success` and/or `failure` parameters requires these to be
 
 * `filesystem.support.toArray(list)`* - convert an object to an array
 * `filesystem.support.listResults(entries, dir)`* - output the results of `filesystem.directory.read()` to the webpage
-* `filesystem.support.upload(dir, file, [success, [failure]])`* - this method actually performs the upload, called by `filesystem.file.upload()`
+* `filesystem.support.upload(dir, file, elem, [success, [failure]])`* - this method actually performs the upload, called by `filesystem.file.upload()`
+* `filesystem.support.multiPartUpload(dir, file, [success, [failure]])`* - if the file size is bigger than `filesystem.maxChunk` this function is called by ``filesystem.support.upload()`
 * `filesystem.support.filetypeSearch(ext)`* - searches registered filetypes and returns the mime or false
 
 **Extras** - not part of the `filesystem` object
@@ -77,7 +78,6 @@ Any method that takes `success` and/or `failure` parameters requires these to be
 ## To Do ##
 
 * Improve `filesystem.errorHandler(e)`
-* Show progress of uploads
 * Investigate any other methods that are needed/could be helpful
 
 ## License ##
