@@ -1,25 +1,39 @@
 window.onload = function(){
 	filesystem = new FileSystem();
-	filesystem.request(PERSISTENT);
+	filesystem.request(window.PERSISTENT);
 };
 
 function FileSystem(){
 	var filesystem = {
-		quota:5*1024*1024,
 		request:function(type, size){
-			var type = (type) ? type : PERSISTENT;
+			if(!filesystem.quota){
+				filesystem.quota = 5*1024*1024;
+			}
+			var type = (type) ? type : window.PERSISTENT;
 			var size = (size) ? size : filesystem.quota;
 			window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
-			window.webkitStorageInfo.requestQuota(type, size, function(grantedBytes) {
-				filesystem.quota = grantedBytes;
-				window.requestFileSystem(type, grantedBytes, function(fs){
-					filesystem.init(fs);
+			if(window.webkitStorageInfo && window.webkitStorageInfo.requestQuota){
+				window.webkitStorageInfo.requestQuota(type, size, function(grantedBytes) {
+					filesystem.quota = grantedBytes;
+					window.requestFileSystem(type, grantedBytes, function(fs){
+						filesystem.init(fs);
+					}, function(e){
+						filesystem.errorHandler(e);
+					});
 				}, function(e){
 					filesystem.errorHandler(e);
 				});
-			}, function(e){
-				filesystem.errorHandler(e);
-			});
+			} else {
+				if(window.requestFileSystem){
+					window.requestFileSystem(type, filesystem.quota, function(fs){
+						filesystem.init(fs);
+					}, function(e){
+						filesystem.errorHandler(e);
+					});
+				} else {
+					return false;
+				}
+			}
 		},
 		init:function(fs){
 			filesystem.fs = fs;
@@ -54,7 +68,7 @@ function FileSystem(){
 			};
 			filesystem.directory.read('/');
 		},
-		errorHandler:function(e){
+		errorHandler:function(e, data){
 			var msg = '';
 			switch (e.code) {
 				case FileError.QUOTA_EXCEEDED_ERR:
@@ -77,36 +91,12 @@ function FileSystem(){
 					break;
 			};
 			console.error('Error: ' + msg);
-		},
-		info:function(){
-			window.webkitStorageInfo.queryUsageAndQuota(PERSISTENT, function(current, total){
-				console.log('current: ', current, ' bytes');
-				console.log('total: ', total, ' bytes');
-				console.log('remaining: ', (total-current), ' bytes');
-			});
-		},
-		registerFiletype:function(options){
-			if(typeof options === 'object'){
-				for(var mime in options){
-					console.log(mime);
-					var types = options[mime];
-					console.log(types);
-					if(filesystem.filetypes.hasOwnProperty(mime)){
-						for(var i = 0, len = types.length; i < len; i++){
-							ftype = types[i];
-							console.log(ftype);
-							var currTypes = filesystem.filetypes[mime];
-							if(!currTypes.contains(ftype)){
-								filesystem.filetypes[mime].push(ftype);
-							}
-						}
-					} else {
-						filesystem.filetypes[mime] = types;
-					}
-				}
-			} else {
-				return false;
+			if(data){
+				console.warn(data);
 			}
+		},
+		clear:function(){
+			filesystem.directory.empty('/');
 		},
 		directory:{
 			create:function(path, root){
@@ -150,7 +140,7 @@ function FileSystem(){
 					filesystem.errorHandler(e);
 				});
 			},
-			read:function(path){
+			read:function(path, success){
 				if(!path){
 					path = filesystem.root;
 				}
@@ -158,12 +148,27 @@ function FileSystem(){
 					filesystem.dirReader = dirEntry.createReader();
 					filesystem.entries = [];
 					filesystem.dirReader.readEntries(function(results) {
-						filesystem.support.listResults(filesystem.support.toArray(results).sort(), dirEntry.fullPath);
+						if(success){
+							success(filesystem.support.toArray(results).sort(), dirEntry.fullPath);
+						} else {
+							filesystem.support.listResults(filesystem.support.toArray(results).sort(), dirEntry.fullPath);
+						}
 					}, function(e){
 						filesystem.errorHandler(e);
 					});
 				}, function(e){
 					filesystem.errorHandler(e);
+				});
+			},
+			empty:function(path){
+				this.read(path, function(list, dir){
+					for(var i = 0, len = list.length; i < len; i++){
+						if(list[i].fullPath.split('.').length > 1){
+							filesystem.file.del(list[i].fullPath);
+						} else {
+							filesystem.directory.del(list[i].fullPath);
+						}
+					}
 				});
 			},
 			copy:function(source, destination){
@@ -327,6 +332,7 @@ function FileSystem(){
 							filesystem.directory.create(destination);
 							filesystem.file.copy(source, destination);
 						});
+					}, function(e){
 						filesystem.errorHandler(e);
 					});
 				}
@@ -370,6 +376,20 @@ function FileSystem(){
 					}
 				}
 			},
+			download:function(path){
+				var fname = path.split('/').pop();
+				fname = fname.replace(/ /g, '-');
+				filesystem.url.get(path, function(url){
+					var a = document.createElement('a');
+					a.style.display = 'none';
+					a.id = 'download_'+fname;
+					a.href = url;
+					a.download = fname;
+					document.getElementsByTagName('body')[0].appendChild(a);
+					a.click();
+					document.getElementsByTagName('body')[0].removeChild(document.getElementById('download_'+fname));
+				});
+			},
 			properties:function(path, success){
 				filesystem.root.getFile(path, {create: false}, function(fileEntry){
 					fileEntry.getMetadata(success, function(e){
@@ -396,6 +416,43 @@ function FileSystem(){
 				}, function(e){
 					filesystem.errorHandler(e);
 				});
+			}
+		},
+		settings:{
+			setQuota:function(bytes){
+				filesystem.quota = bytes;
+			},
+			storage:function(success){
+				success = success || function(current, total){
+					console.log('current: ', current, ' bytes');
+					console.log('total: ', total, ' bytes');
+					console.log('remaining: ', (total-current), ' bytes');
+				};
+				window.webkitStorageInfo.queryUsageAndQuota(window.PERSISTENT, success);
+			},
+			registerFiletypes:function(options){
+				if(typeof options === 'object'){
+					for(var mime in options){
+						var types = options[mime];
+						if(filesystem.filetypes.hasOwnProperty(mime)){
+							for(var i = 0, len = types.length; i < len; i++){
+								ftype = types[i];
+								var currTypes = filesystem.filetypes[mime];
+								if(!currTypes.contains(ftype)){
+									filesystem.filetypes[mime].push(ftype);
+								}
+							}
+						} else {
+							filesystem.filetypes[mime] = types;
+						}
+					}
+				} else {
+					return false;
+				}
+				return true;
+			},
+			getFiletypes:function(){
+				return filesystem.filetypes;
 			}
 		},
 		support:{
@@ -428,7 +485,7 @@ function FileSystem(){
 				if(typeof file !== 'undefined'){
 					var ftype = file.type, fname = file.name, fmod = file.lastModifiedDate, fsize = file.size;
 					filesystem.root.getDirectory(dir, {create: false}, function(dirEntry){
-						filesystem.root.getFile(fname, {create: true}, function(fileEntry){
+						dirEntry.getFile(fname, {create: true}, function(fileEntry){
 							var reader = new FileReader();
 							reader.onloadend = function(theFile){
 								if(theFile.target.readyState == FileReader.DONE){
@@ -465,10 +522,8 @@ function FileSystem(){
 			filetypeSearch:function(ext){
 				for(var mime in filesystem.filetypes){
 					var types = filesystem.filetypes[mime];
-					for(var type in types){
-						if(type === ext.toLowerCase()){
-							return mime;
-						}
+					if(types.contains(ext)){
+						return mime;
 					}
 				}
 			}
@@ -483,9 +538,21 @@ function FileSystem(){
 	}
 	if(!Array.prototype.contains){
 		Array.prototype.contains = function(term){
+			"use strict";
 			for(var i = 0, len = this.length; i < len; i++){
 				if(this[i] === term){
 					return true;
+				}
+			}
+			return false;
+		}
+	}
+	if(!Array.prototype.find){
+		Array.prototype.find = function(term){
+			"use strict";
+			for (var i = 0, len = this.length; i < len; i++) {
+				if (this[i] === term) {
+					return i;
 				}
 			}
 			return false;
