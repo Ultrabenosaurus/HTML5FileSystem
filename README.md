@@ -57,6 +57,7 @@ Any method that takes `success` and/or `failure` parameters requires these to be
 **Settings**
 
 * `filesystem.settings.setQuota(bytes)` - set a custom storage quota before making a request
+* `filesystem.settings.setMaxChunk(bytes)` - set a custom chunk size for multi-part uploads
 * `filesystem.settings.storage([success])` - returns current usage values
 * `filesystem.settings.registerFiletypes(options)` - adds mime and filetypes for use with reading/writing files
 * `filesystem.settings.getFiletypes()` - returns current filetype list

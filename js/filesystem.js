@@ -67,7 +67,9 @@ function FileSystem(){
 					'mp3'
 				]
 			};
-			filesystem.maxChunk = 10*1024*1024;
+			if(!filesystem.maxChunk){
+				filesystem.maxChunk = 10*1024*1024;
+			}
 			filesystem.directory.read('/');
 		},
 		errorHandler:function(e, data){
@@ -422,6 +424,9 @@ function FileSystem(){
 		settings:{
 			setQuota:function(bytes){
 				filesystem.quota = bytes;
+			},
+			setMaxChunk:function(bytes){
+				filesystem.maxChunk = bytes;
 			},
 			storage:function(success){
 				success = success || function(current, total){
