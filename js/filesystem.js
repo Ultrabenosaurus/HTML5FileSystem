@@ -1,6 +1,12 @@
 window.onload = function(){
 	filesystem = new FileSystem();
 	filesystem.request(window.PERSISTENT);
+	
+	var dropZone = document.getElementById('filesDrag');
+	dropZone.addEventListener('dragover', filesystem.support.dragOver, false);
+	dropZone.addEventListener('drop', function(evt){
+		filesystem.support.drop(evt, '/');
+	}, false);
 };
 
 function FileSystem(){
@@ -66,6 +72,7 @@ function FileSystem(){
 					'mp3'
 				]
 			};
+			filesystem.server.script = 'php/html5fs.php';
 			if(!filesystem.maxChunk){
 				filesystem.maxChunk = 10*1024*1024;
 			}
@@ -271,7 +278,7 @@ function FileSystem(){
 				filesystem.root.getFile(path, {create: false}, function(fileEntry){
 					fileEntry.file(function(file){
 						var reader = new FileReader();
-						reader.onloadend = success;
+						reader.onload = success;
 						if(mime.match('text.*')) {
 							reader.readAsText(file);
 						} else {
@@ -370,12 +377,23 @@ function FileSystem(){
 					filesystem.errorHandler(e);
 				});
 			},
-			upload:function(name, dir, overwrite, success, failure){
-				inputs = document.getElementsByName(name);
-				for(var i = 0, elem; elem = inputs[i]; i++){
-					f = elem.files[0];
-					if(typeof f !== 'undefined'){
-						filesystem.support.upload(dir, f, elem, success, failure);
+			upload:function(name, dir, success, failure){
+				if(document.getElementsByName(name).length > 0){
+					inputs = document.getElementsByName(name);
+					for(var i = 0, elem; elem = inputs[i]; i++){
+						f = elem.files[0];
+						if(typeof f !== 'undefined'){
+							filesystem.support.upload(dir, f, elem, success, failure);
+						}
+					}
+				} else {
+					elem = document.getElementById(name);
+					if(typeof elem.files !== 'undefined'){
+						for(var i = 0, f; f = elem.files[i]; i++){
+							if(typeof f !== 'undefined'){
+								filesystem.support.upload(dir, f, elem, success, failure);
+							}
+						}
 					}
 				}
 			},
@@ -420,6 +438,29 @@ function FileSystem(){
 				});
 			}
 		},
+		server:{
+			upload:function(local, remote, success, failure){
+				fname = local.split('/').pop();
+				filesystem.file.read(local, function(evt){
+					data = evt.target.result;
+					filesystem.support.ajax("type=upload&fname="+fname+"&dir="+remote+"&data="+filesystem.support.urlencode(data), success, failure);
+				});
+			},
+			download:function(remote, local, success, failure){
+				fname = remote.split('/').pop();
+				local = (local.substring(-1) == '/') ? local : local+'/';
+				filesystem.support.ajax("type=download&file="+remote, function(response){
+					response = JSON.parse(response);
+					if(response.result === 'success'){
+						filesystem.file.write(local+fname, filesystem.support.urldecode(response.data), success);
+					} else {
+						if(failure){
+							failure(response.details);
+						}
+					}
+				}, failure);
+			}
+		},
 		settings:{
 			setQuota:function(bytes){
 				filesystem.quota = bytes;
@@ -428,10 +469,30 @@ function FileSystem(){
 				filesystem.maxChunk = bytes;
 			},
 			storage:function(success){
-				success = success || function(current, total){
-					console.log('current: ', current, ' bytes');
-					console.log('total: ', total, ' bytes');
-					console.log('remaining: ', (total-current), ' bytes');
+				var suffix = [' bytes', 'KB', 'MB', 'GB'];
+				success = success || function(currBytes, totalBytes){
+					remBytes = totalBytes-currBytes;
+					current = currBytes;
+					currCount = 0;
+					while((current / 1024) >= 1){
+						current = current / 1024;
+						currCount++;
+					}
+					remaining = remBytes;
+					remCount = 0;
+					while((remaining / 1024) >= 1){
+						remaining = remaining / 1024;
+						remCount++;
+					}
+					total = totalBytes;
+					totCount = 0;
+					while((total / 1024) >= 1){
+						total = total / 1024;
+						totCount++;
+					}
+					console.log('current: ', filesystem.support.roundTo(current, 3), suffix[currCount], " (", currBytes, ' bytes)');
+					console.log('total: ', filesystem.support.roundTo(total, 3), suffix[totCount], " (", totalBytes, ' bytes)');
+					console.log('remaining: ', filesystem.support.roundTo(remaining, 3), suffix[remCount], " (", remBytes, ' bytes)');
 				};
 				window.webkitStorageInfo.queryUsageAndQuota(window.PERSISTENT, success);
 			},
@@ -665,6 +726,16 @@ function FileSystem(){
 					}
 				});
 			},
+			dragOver:function(evt){
+				evt.stopPropagation();
+				evt.preventDefault();
+			},
+			drop:function(evt, dir, success, failure){
+				evt.stopPropagation();
+				evt.preventDefault();
+				f = evt.dataTransfer.files[0];
+				filesystem.support.upload(dir, f, evt.target, success, failure);
+			},
 			filetypeSearch:function(ext){
 				for(var mime in filesystem.filetypes){
 					var types = filesystem.filetypes[mime];
@@ -672,6 +743,32 @@ function FileSystem(){
 						return mime;
 					}
 				}
+			},
+			roundTo:function(number, decimals){
+				var multiplier = Math.pow(10, decimals);
+				return Math.round(number * multiplier) / multiplier;
+			},
+			urlencode:function(str){
+				str = (str + '').toString();
+				return encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
+			},
+			urldecode:function(str){
+				return decodeURIComponent((str + '').replace(/\+/g, '%20'));
+			},
+			ajax:function(data, success, failure){
+				var xmlhttp = (window.XMLHttpRequest) ? xmlhttp = new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
+				xmlhttp.open("POST", filesystem.server.script, true);
+				xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+				xmlhttp.send(data);
+				xmlhttp.onreadystatechange = function(){
+					if(xmlhttp.readyState == 4 && xmlhttp.status == 200){
+						success(xmlhttp.responseText);
+					} else {
+						if(failure){
+							failure(xmlhttp);
+						}
+					}
+				};
 			}
 		}
 	};
