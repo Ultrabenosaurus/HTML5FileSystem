@@ -19,16 +19,8 @@
 		display: none;
 	}
 	#container{
-		width: 1000px;
+		width: 600px;
 		margin: 0 auto;
-	}
-	#left{
-		float: left;
-		width: 29%;
-	}
-	#right{
-		float: right;
-		width: 70%;
 	}
 	#filesDrag{
 		height: 100px;
@@ -51,78 +43,18 @@
 </head>
 	<body>
 		<div id='container'>
-			<div id='left'>
-				<input type='file' id='files1' name='files1[]' multiple />
-				<input type='file' id='files1' name='files1[]' multiple />
-				<input type='file' id='files1' name='files1[]' multiple />
-				<div id='filesDrag'></div>
-				<ul id='filelist'></ul>
-			</div>
-			<div id='right'>
-				<p>
-					Test this library by using your browsers console.<br />
-					All paths should be from root, not relative, unless a <code>dir</code> parameter is required in which case all other paths should be relative to <code>dir</code>.<br />
-					All paths should be provided as strings, not DirectoryEntry objects.<br />
-					Any method that takes <code>success</code> and/or <code>failure</code> parameters requires these to be valid callbacks, as the underlying API methods return <code>void</code> and rely on callbacks themselves so no natural return is possible.<br />
-					*Commands marked with an asterisk are not meant to be called directly.
-				</p>
-				<p>Commands:
-					<ul id='generic'><span onclick="toggle('generic')">Generic</span>
-						<li><code>filesystem.request(type, [size])</code> - request a FileSystem allocation</li>
-						<li><code>filesystem.clear()</code> - deletes ALL files and directories in the FileSystem</li>
-						<li><code>filesystem.init(fs)</code>* - set initial variables, read root directory</li>
-						<li><code>filesystem.errorHandler(e)</code>* - process errors (default: send to console)</li>
-					</ul>
-					<ul id='directory'><span onclick="toggle('directory')">Directory</span>
-						<li><code>filesystem.directory.create(path)</code> - create a directory path recursively</li>
-						<li><code>filesystem.directory.delete(path)</code> - recursively delete all files and directories along the path</li>
-						<li><code>filesystem.directory.read(path)</code> - read the given path</li>
-						<li><code>filesystem.directory.empty(path)</code> - delete all files and directories in the given path</li>
-						<li><code>filesystem.directory.copy(source, destination)</code> - copy a directory</li>
-						<li><code>filesystem.directory.move(source, destination)</code> - move a directory</li>
-						<li><code>filesystem.directory.rename(dir, old, new)</code> - rename a directory</li>
-						<li><code>filesystem.directory.properties(path, success)</code> - get the metadata of a directory</li>
-					</ul>
-					<ul id='file'><span onclick="toggle('file')">File</span>
-						<li><code>filesystem.file.create(path)</code> - create a file, including its directory path</li>
-						<li><code>filesystem.file.delete(path)</code> - delete the file specified by path</li>
-						<li><code>filesystem.file.read(path, success)</code> - read a stored text file and return its contents</li>
-						<li><code>filesystem.file.write(path, data, success, [append])</code> - write to a text file</li>
-						<li><code>filesystem.file.copy(source, destination)</code> - copy a file</li>
-						<li><code>filesystem.file.move(source, destination)</code> - move a file</li>
-						<li><code>filesystem.file.rename(dir, old, new)</code> - rename a file</li>
-						<li><code>filesystem.file.upload(name, dir, [success, [failure]])</code> - upload one or more files to the FileSystem</li>
-						<li><code>filesystem.file.download(path)</code> - force a file in the FileSystem to be downloaded (Chrome only)</li>
-						<li><code>filesystem.file.properties(path, success)</code> - get the metadata of a file</li>
-					</ul>
-					<ul id='url'><span onclick="toggle('url')">URL</span>
-						<li><code>filesystem.url.get(path, success)</code> - get the URL of a file from a path</li>
-						<li><code>filesystem.url.resolve(url, success)</code> - resolve the URL of a file into a path</li>
-					</ul>
-					<ul id='settings'><span onclick="toggle('settings')">Settings</span>
-						<li><code>filesystem.settings.setQuota(bytes)</code> - set a custom storage quota before making a request</li>
-						<li><code>filesystem.settings.setMaxChunk(bytes)</code> - set a custom chunk size for multi-part uploads</li>
-						<li><code>filesystem.settings.storage([success])</code> - returns current usage values</li>
-						<li><code>filesystem.settings.registerFiletypes(options)</code> - adds mime and filetypes for use with reading/writing files</li>
-						<li><code>filesystem.settings.getFiletypes()</code> - returns current filetype list</li>
-					</ul>
-					<ul id='support'><span onclick="toggle('support')">Support</span>
-						<li><code>filesystem.support.toArray(list)</code>* - convert an object to an array</li>
-						<li><code>filesystem.support.listResults(entries, dir)</code>* - output the results of <code>filesystem.directory.read()</code> to the webpage</li>
-						<li><code>filesystem.support.upload(dir, file, elem, [success, [failure]])</code>* - this method actually performs the upload, called by <code>filesystem.file.upload()</code></li>
-						<li><code>filesystem.support.multiPartUpload(dir, file, [success, [failure]])</code>* - if the file size is bigger than <code>filesystem.maxChunk</code> this function is called by `<code>filesystem.support.upload()</code></li>
-						<li><code>filesystem.support.filetypeSearch(ext)</code>* - searches registered filetypes and returns the mime or false</li>
-					</ul>
-					<ul id='extras'><span onclick="toggle('extras')">Extras</span> - not part of the `filesystem` object
-						<li><code>Array.prototype.forEach(fn, scope)</code>* - runs function <code>fn</code> for each item in the array</li>
-						<li><code>Array.prototype.contains(term)</code>* - returns true if <code>term</code> is found, or false</li>
-						<li><code>Array.prototype.find(term)</code>* - returns index of <code>term</code> if found, or false</li>
-					</ul><br />
-				</p>
-			</div>
+			<input type='file' id='files1' name='files1[]' multiple /><br />
+			<input type='file' id='files1' name='files1[]' multiple /><br />
+			<input type='file' id='files1' name='files1[]' multiple /><br />
+			<div id='filesDrag'></div>
+			<ul id='filelist'></ul>
 		</div>
 	</body>
 	<script src='js/filesystem.js'></script>
+	<script src='js/jszip/jszip.js'></script>
+	<script src='js/jszip/jszip-load.js'></script>
+	<script src='js/jszip/jszip-inflate.js'></script>
+	<script src='js/jszip/jszip-deflate.js'></script>
 	<script type='text/javascript'>
 	function toggle(id){
 		var items = document.getElementById(id).children;
@@ -145,7 +77,6 @@
 		if(value){
 			if(value.target){
 				text = value.target.result || value.target.response;
-				// text = JSON.parse(filesystem.support.urldecode(text)) || filesystem.support.urldecode(text);
 				try{
 					text = JSON.parse(filesystem.support.urldecode(text));
 					if(text.result && text.uri && text.result == 'success'){
@@ -154,7 +85,11 @@
 						console.log(text);
 					}
 				} catch(e) {
-					text = filesystem.support.urldecode(text);
+					try{
+						text = filesystem.support.urldecode(text);
+					} catch(e) {
+						text = text;
+					}
 					console.log(text);
 				}
 			} else {

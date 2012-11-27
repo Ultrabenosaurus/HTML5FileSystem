@@ -70,6 +70,9 @@ function FileSystem(){
 				],
 				'audio/mp3':[
 					'mp3'
+				],
+				'application/zip':[
+					'zip'
 				]
 			};
 			filesystem.server.script = 'php/html5fs.php';
@@ -273,7 +276,7 @@ function FileSystem(){
 					filesystem.errorHandler(e);
 				});
 			},
-			read:function(path, success){
+			read:function(path, success, zip){
 				var mime = filesystem.support.filetypeSearch(path.split('.')[1]);
 				filesystem.root.getFile(path, {create: false}, function(fileEntry){
 					fileEntry.file(function(file){
@@ -282,7 +285,15 @@ function FileSystem(){
 						if(mime.match('text.*')) {
 							reader.readAsText(file);
 						} else {
-							reader.readAsArrayBuffer(file);
+							if(zip){
+								/*if(mime.match('image.*')){
+									reader.readAsDataURL(file);
+								} else {*/
+									reader.readAsText(file);
+								// }
+							} else {
+								reader.readAsArrayBuffer(file);
+							}
 						}
 					}, function(e){
 						filesystem.errorHandler(e);
@@ -314,6 +325,7 @@ function FileSystem(){
 							if(append){
 								fileWriter.seek(fileWriter.length);
 							}
+							// console.log(data);
 							var blob = new Blob([data], {type: mime});
 							fileWriter.write(blob);
 						}, function(e){
@@ -511,6 +523,50 @@ function FileSystem(){
 					if(failure){
 						failure();
 					}
+				}
+			}
+		},
+		zip:{
+			create:function(){
+				if(JSZip){
+					return new JSZip();
+				} else {
+					return false;
+				}
+			},
+			open:function(path){
+				if(JSZip){
+					var jszip = new JSZip();
+					filesystem.file.read(path, function(value){
+						value = value.target.result || value.target.response;
+						jszip.load(value);
+					}, true);
+					return jszip;
+				} else {
+					return false;
+				}
+			},
+			extract:function(data){
+				if(typeof data === 'string'){
+					var jszip = filesystem.zip.load(data);
+					return filesystem.zip.extract(jszip);
+				} else if(typeof data === 'object'){
+					return data;
+				} else {
+					return false;
+				}
+			},
+			save:function(path, zipobj, success){
+				var data = "";
+				if(zipobj.files.undefined){
+					delete zipobj.files.undefined;
+				}
+				try{
+					data = zipobj.generate({base64:false, compression:"DEFLATE"});
+					filesystem.file.write(path, data, success);
+					// return data;
+				} catch(e){
+					filesystem.errorHandler(e);
 				}
 			}
 		},

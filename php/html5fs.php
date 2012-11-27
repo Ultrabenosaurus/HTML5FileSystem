@@ -16,6 +16,26 @@ if($fn){
 	}
 } else {
 	echo "<pre>" . print_r($_SERVER, true) . "</pre>";
+	// echo get_mime_type('Stuk-jszip-5b88e21.zip');
+}
+
+function get_mime_type($filename){
+	$dir = explode('/', $_SERVER['DOCUMENT_ROOT']);
+	array_pop($dir);
+	array_pop($dir);
+	array_pop($dir);
+	$dir = implode('/', $dir) . "/apache/conf/";
+	$fileext = substr(strrchr($filename, '.'), 1);
+	if(empty($fileext)) return (false);
+	$regex = "/^([\w\+\-\.\/]+)\s+(\w+\s)*($fileext\s)/i";
+	$lines = file($dir."mime.types");
+	foreach($lines as $line){
+			if(substr($line, 0, 1) == '#') continue;
+			$line = rtrim($line) . " ";
+			if(!preg_match($regex, $line, $matches)) continue;
+			return ($matches[1]);
+	}
+	return (false);
 }
 
 ?>
