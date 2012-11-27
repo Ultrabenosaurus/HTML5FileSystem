@@ -141,5 +141,26 @@
 			}
 		}
 	}
+	var success = function(value){
+		if(value){
+			if(value.target){
+				text = value.target.result || value.target.response;
+				// text = JSON.parse(filesystem.support.urldecode(text)) || filesystem.support.urldecode(text);
+				try{
+					text = JSON.parse(filesystem.support.urldecode(text));
+					if(text.result && text.uri && text.result == 'success'){
+						console.log(filesystem.url.relative(text.uri));
+					} else {
+						console.log(text);
+					}
+				} catch(e) {
+					text = filesystem.support.urldecode(text);
+					console.log(text);
+				}
+			} else {
+				console.log(value);
+			}
+		}
+	};
 	</script>
 </html>

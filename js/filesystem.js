@@ -152,7 +152,7 @@ function FileSystem(){
 			},
 			read:function(path, success){
 				if(!path){
-					path = filesystem.root;
+					path = filesystem.root.fullPath;
 				}
 				filesystem.root.getDirectory(path, {create: false}, function(dirEntry) {
 					filesystem.dirReader = dirEntry.createReader();
@@ -330,7 +330,7 @@ function FileSystem(){
 					filesystem.file.write(path, data, append);
 				});
 			},
-			copy:function(source, destination){
+			copy:function(source, destination, create){
 				var source = source || false, destination = destination || false;
 				if(source && destination){
 					filesystem.root.getFile(source, {create: false}, function(fileEntry){
@@ -338,16 +338,19 @@ function FileSystem(){
 							fileEntry.copyTo(dirEntry);
 							filesystem.directory.read(dirEntry.fullPath);
 						}, function(e){
-							filesystem.errorHandler(e);
-							filesystem.directory.create(destination);
-							filesystem.file.copy(source, destination);
+							if(create){
+								filesystem.directory.create(destination);
+								filesystem.file.copy(source, destination);
+							} else {
+								filesystem.errorHandler(e);
+							}
 						});
 					}, function(e){
 						filesystem.errorHandler(e);
 					});
 				}
 			},
-			move:function(source, destination){
+			move:function(source, destination, create){
 				var source = source || false, destination = destination || false;
 				if(source && destination){
 					filesystem.root.getFile(source, {create: false}, function(fileEntry){
@@ -355,9 +358,12 @@ function FileSystem(){
 							fileEntry.moveTo(dirEntry);
 							filesystem.directory.read(destination);
 						}, function(e){
-							filesystem.errorHandler(e);
-							filesystem.directory.create(destination);
-							filesystem.file.move(source, destination);
+							if(create){
+								filesystem.directory.create(destination);
+								filesystem.file.copy(source, destination);
+							} else {
+								filesystem.errorHandler(e);
+							}
 						});
 					}, function(e){
 						filesystem.errorHandler(e);
@@ -436,29 +442,76 @@ function FileSystem(){
 				}, function(e){
 					filesystem.errorHandler(e);
 				});
+			},
+			relative:function(path){
+				var a = document.createElement('a');
+				a.href = path;
+				temp = a.href;
+				a = null;
+				return temp;
 			}
 		},
 		server:{
 			upload:function(local, remote, success, failure){
 				fname = local.split('/').pop();
-				filesystem.file.read(local, function(evt){
-					data = evt.target.result;
-					filesystem.support.ajax("type=upload&fname="+fname+"&dir="+remote+"&data="+filesystem.support.urlencode(data), success, failure);
+				filesystem.root.getFile(local, {create: false}, function(fileEntry){
+					fileEntry.file(function(file){
+						if(window.XMLHttpRequest){
+							var xhr = new XMLHttpRequest();
+							if(xhr.upload){
+								xhr.onload = function(e){
+									success(e);
+								};
+								xhr.open("POST", filesystem.server.script, true);
+								xhr.setRequestHeader("X_TYPE", "upload");
+								xhr.setRequestHeader("X_FILENAME", file.name);
+								xhr.setRequestHeader("X_DIRECTORY", remote);
+								xhr.send(file);
+								xhr = null;
+							} else {
+								if(failure){
+									failure();
+								}
+							}
+						} else {
+							if(failure){
+								failure();
+							}
+						}
+					}, function(e){
+						filesystem.errorHandler(e);
+					});
+				}, function(e){
+					filesystem.errorHandler(e);
 				});
 			},
 			download:function(remote, local, success, failure){
-				fname = remote.split('/').pop();
+				remote = (remote.split('/').length > 1) ? remote : "./"+remote;
+				path = remote.split('/');
+				fname = path.pop();
+				path = path.join('/');
+				path = (path.substring(-1) == '/') ? path : path+'/';
 				local = (local.substring(-1) == '/') ? local : local+'/';
-				filesystem.support.ajax("type=download&file="+remote, function(response){
-					response = JSON.parse(response);
-					if(response.result === 'success'){
-						filesystem.file.write(local+fname, filesystem.support.urldecode(response.data), success);
+				if(window.XMLHttpRequest){
+					var xhr = new XMLHttpRequest();
+					if(xhr.upload){
+						xhr.onload = function(e){
+							filesystem.file.write(local+fname, e.target.response, success, failure);
+						};
+						xhr.open("GET", remote, true);
+						xhr.responseType = 'blob';
+						xhr.send();
+						xhr = null;
 					} else {
 						if(failure){
-							failure(response.details);
+							failure();
 						}
 					}
-				}, failure);
+				} else {
+					if(failure){
+						failure();
+					}
+				}
 			}
 		},
 		settings:{
@@ -552,7 +605,7 @@ function FileSystem(){
 					var ftype = file.type, fname = file.name.replace(/ /g, '-'), fmod = file.lastModifiedDate, fsize = file.size;
 					filesystem.root.getDirectory(dir, {create: false}, function(dirEntry){
 						dirEntry.getFile(fname, {create: true}, function(fileEntry){
-							if(document.getElementById('progress_'+fname)){
+							if(document.getElementById('progress_'+fname) && elem){
 								var progBar = document.getElementById('progress_'+fname);
 								progBar.style.width = '0%';
 							} else {
@@ -669,21 +722,27 @@ function FileSystem(){
 												filesystem.file.properties(fileEntry.fullPath, function(value){
 													currSize = value.size;
 													if(currSize < fsize){
-														var progBar = document.getElementById('progress_'+fname);
-														progBar.style.width = (currSize/fsize)*100+'%';
+														if(document.getElementById('progress_'+fname)){
+															var progBar = document.getElementById('progress_'+fname);
+															progBar.style.width = (currSize/fsize)*100+'%';
+														}
 														filesystem.support.multiPartUpload(dir, file, success, failure);
 													} else {
-														var progBar = document.getElementById('progress_'+fname);
-														progBar.className = progBar.className+' complete';
-														progBar.style.width = '100%';
+														if(document.getElementById('progress_'+fname)){
+															var progBar = document.getElementById('progress_'+fname);
+															progBar.className = progBar.className+' complete';
+															progBar.style.width = '100%';
+														}
 														filesystem.directory.read(dir);
 													}
 												});
 											}
 											fileWriter.onerror = function(e){
 												filesystem.errorHandler(e);
-												var progBar = document.getElementById('progress_'+fname);
-												progBar.className = progBar.className+' error';
+												if(document.getElementById('progress_'+fname)){
+													var progBar = document.getElementById('progress_'+fname);
+													progBar.className = progBar.className+' error';
+												}
 												if(failure){
 													failure(e);
 												}
@@ -754,21 +813,6 @@ function FileSystem(){
 			},
 			urldecode:function(str){
 				return decodeURIComponent((str + '').replace(/\+/g, '%20'));
-			},
-			ajax:function(data, success, failure){
-				var xmlhttp = (window.XMLHttpRequest) ? xmlhttp = new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
-				xmlhttp.open("POST", filesystem.server.script, true);
-				xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-				xmlhttp.send(data);
-				xmlhttp.onreadystatechange = function(){
-					if(xmlhttp.readyState == 4 && xmlhttp.status == 200){
-						success(xmlhttp.responseText);
-					} else {
-						if(failure){
-							failure(xmlhttp);
-						}
-					}
-				};
 			}
 		}
 	};
