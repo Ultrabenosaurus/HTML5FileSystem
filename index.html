@@ -51,28 +51,7 @@
 		</div>
 	</body>
 	<script src='js/filesystem.js'></script>
-	<script src='js/jszip/jszip.js'></script>
-	<script src='js/jszip/jszip-load.js'></script>
-	<script src='js/jszip/jszip-inflate.js'></script>
-	<script src='js/jszip/jszip-deflate.js'></script>
 	<script type='text/javascript'>
-	function toggle(id){
-		var items = document.getElementById(id).children;
-		for(var i = 0, len = items.length; i < len; i++){
-			elem = items[i];
-			if(elem.tagName.toLowerCase() === 'li'){
-				switch(elem.style.display){
-					case 'block':
-						elem.style.display = 'none';
-						break;
-					case 'none':
-					default:
-						elem.style.display = 'block';
-						break;
-				}
-			}
-		}
-	}
 	var success = function(value){
 		if(value){
 			if(value.target){
@@ -93,7 +72,15 @@
 					console.log(text);
 				}
 			} else {
-				console.log(value);
+				if(value.toString){
+					console.log(value);
+				} else {
+					try{
+						console.log(ab2str(value));
+					} catch(e) {
+						console.warn("could not decipher value from", value);
+					}
+				}
 			}
 		}
 	};

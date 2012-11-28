@@ -1,22 +1,23 @@
 <?php
 
 $fn = (isset($_SERVER['HTTP_X_FILENAME']) ? $_SERVER['HTTP_X_FILENAME'] : false);
-$path = (isset($_SERVER['HTTP_X_DIRECTORY']) ? $_SERVER['HTTP_X_DIRECTORY'] : null);
+$path = (isset($_SERVER['HTTP_X_DIRECTORY']) ? $_SERVER['HTTP_X_DIRECTORY'] : false);
 if($fn){
 	chdir('../');
+	if($path){
+		$path = (substr($path, -1) === '/') ? $path : $path.'/';
+		if(!is_dir($path)){
+			mkdir($path, 0777, true);
+		}
+	}
 	file_put_contents($path.$fn, file_get_contents('php://input'));
 	if(file_exists($path.$fn)){
-		$dir = explode('/', $_SERVER['SCRIPT_NAME']);
-		array_pop($dir);
-		$dir = implode('/', $dir);
-		$dir = (substr($dir, -1) == '/') ? $dir : $dir.'/';
 		echo json_encode(array("result"=>"success", "uri"=>urlencode($path.$fn)));
 	} else {
 		echo json_encode(array('result'=>'failure', 'details'=>urlencode('file could not be created')));
 	}
 } else {
 	echo "<pre>" . print_r($_SERVER, true) . "</pre>";
-	// echo get_mime_type('Stuk-jszip-5b88e21.zip');
 }
 
 function get_mime_type($filename){

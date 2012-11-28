@@ -56,7 +56,8 @@ function FileSystem(){
 					'asp',
 					'aspx',
 					'md',
-					'markdown'
+					'markdown',
+					'css'
 				],
 				'image/png':[
 					'png'
@@ -70,9 +71,6 @@ function FileSystem(){
 				],
 				'audio/mp3':[
 					'mp3'
-				],
-				'application/zip':[
-					'zip'
 				]
 			};
 			filesystem.server.script = 'php/html5fs.php';
@@ -244,7 +242,7 @@ function FileSystem(){
 			}
 		},
 		file:{
-			create:function(path){
+			create:function(path, read){
 				var path = path;
 				var folders = path.split('/');
 				var filename = folders.pop();
@@ -252,7 +250,9 @@ function FileSystem(){
 				filesystem.directory.create(folders);
 				filesystem.root.getDirectory(folders.join('/'), {create: false, exclusive: true}, function(dirEntry){
 					dirEntry.getFile(filename, {create: true}, function(fileEntry){
-						filesystem.directory.read(dirEntry.fullPath);
+						if(read === null){
+							filesystem.directory.read(dirEntry.fullPath);
+						}
 					}, function(e){
 						filesystem.errorHandler(e);
 						filesystem.file.create(path);
@@ -272,28 +272,20 @@ function FileSystem(){
 					}, function(e){
 						filesystem.errorHandler(e);
 					});
-				}, function(e){
-					filesystem.errorHandler(e);
 				});
 			},
-			read:function(path, success, zip){
+			read:function(path, success){
 				var mime = filesystem.support.filetypeSearch(path.split('.')[1]);
 				filesystem.root.getFile(path, {create: false}, function(fileEntry){
 					fileEntry.file(function(file){
 						var reader = new FileReader();
 						reader.onload = success;
-						if(mime.match('text.*')) {
+						if(typeof mime === 'undefined'){
+							reader.readAsBinaryString(file);
+						} else if(mime.match('text.*')) {
 							reader.readAsText(file);
 						} else {
-							if(zip){
-								/*if(mime.match('image.*')){
-									reader.readAsDataURL(file);
-								} else {*/
-									reader.readAsText(file);
-								// }
-							} else {
-								reader.readAsArrayBuffer(file);
-							}
+							reader.readAsArrayBuffer(file);
 						}
 					}, function(e){
 						filesystem.errorHandler(e);
@@ -325,7 +317,6 @@ function FileSystem(){
 							if(append){
 								fileWriter.seek(fileWriter.length);
 							}
-							// console.log(data);
 							var blob = new Blob([data], {type: mime});
 							fileWriter.write(blob);
 						}, function(e){
@@ -468,28 +459,11 @@ function FileSystem(){
 				fname = local.split('/').pop();
 				filesystem.root.getFile(local, {create: false}, function(fileEntry){
 					fileEntry.file(function(file){
-						if(window.XMLHttpRequest){
-							var xhr = new XMLHttpRequest();
-							if(xhr.upload){
-								xhr.onload = function(e){
-									success(e);
-								};
-								xhr.open("POST", filesystem.server.script, true);
-								xhr.setRequestHeader("X_TYPE", "upload");
-								xhr.setRequestHeader("X_FILENAME", file.name);
-								xhr.setRequestHeader("X_DIRECTORY", remote);
-								xhr.send(file);
-								xhr = null;
-							} else {
-								if(failure){
-									failure();
-								}
-							}
-						} else {
-							if(failure){
-								failure();
-							}
-						}
+						filesystem.support.ajax("POST", filesystem.server.script, file, success, failure, null, {
+							'X_TYPE':'upload',
+							'X_FILENAME':file.name,
+							'X_DIRECTORY':remote
+						});
 					}, function(e){
 						filesystem.errorHandler(e);
 					});
@@ -498,75 +472,25 @@ function FileSystem(){
 				});
 			},
 			download:function(remote, local, success, failure){
-				remote = (remote.split('/').length > 1) ? remote : "./"+remote;
-				path = remote.split('/');
-				fname = path.pop();
-				path = path.join('/');
-				path = (path.substring(-1) == '/') ? path : path+'/';
+				remote = "./"+remote;
+				fname = remote.split('/');
+				fname = fname.pop();
 				local = (local.substring(-1) == '/') ? local : local+'/';
-				if(window.XMLHttpRequest){
-					var xhr = new XMLHttpRequest();
-					if(xhr.upload){
-						xhr.onload = function(e){
-							filesystem.file.write(local+fname, e.target.response, success, failure);
-						};
-						xhr.open("GET", remote, true);
-						xhr.responseType = 'blob';
-						xhr.send();
-						xhr = null;
-					} else {
-						if(failure){
-							failure();
-						}
+				console.log(local+fname);
+				filesystem.support.ajax("GET", remote, null, function(e){
+					filesystem.file.write(local+fname, e.target.response, success, failure);
+				}, failure, 'blob', null);
+			},
+			multi:function(direction, files, directory, success, failure){
+				for(var i = 0, file; file = files[i]; i++){
+					switch(direction){
+						case 'upload':
+							filesystem.server.upload(file, directory, success, failure);
+							break;
+						case 'download':
+							filesystem.server.download(file, directory, success, failure);
+							break;
 					}
-				} else {
-					if(failure){
-						failure();
-					}
-				}
-			}
-		},
-		zip:{
-			create:function(){
-				if(JSZip){
-					return new JSZip();
-				} else {
-					return false;
-				}
-			},
-			open:function(path){
-				if(JSZip){
-					var jszip = new JSZip();
-					filesystem.file.read(path, function(value){
-						value = value.target.result || value.target.response;
-						jszip.load(value);
-					}, true);
-					return jszip;
-				} else {
-					return false;
-				}
-			},
-			extract:function(data){
-				if(typeof data === 'string'){
-					var jszip = filesystem.zip.load(data);
-					return filesystem.zip.extract(jszip);
-				} else if(typeof data === 'object'){
-					return data;
-				} else {
-					return false;
-				}
-			},
-			save:function(path, zipobj, success){
-				var data = "";
-				if(zipobj.files.undefined){
-					delete zipobj.files.undefined;
-				}
-				try{
-					data = zipobj.generate({base64:false, compression:"DEFLATE"});
-					filesystem.file.write(path, data, success);
-					// return data;
-				} catch(e){
-					filesystem.errorHandler(e);
 				}
 			}
 		},
@@ -865,10 +789,61 @@ function FileSystem(){
 			},
 			urlencode:function(str){
 				str = (str + '').toString();
-				return encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
+				return encodeURIComponent(str).replace(/'/g, '%27').replace(/%20/g, '+').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/!/g, '%21').replace(/\*/g, '%2A');
 			},
 			urldecode:function(str){
 				return decodeURIComponent((str + '').replace(/\+/g, '%20'));
+			},
+			ajax:function(type, address, data, success, failure, responseType, requestHeaders){
+				if(window.XMLHttpRequest){
+					var xhr = {};
+					xhr.address = new XMLHttpRequest();
+					if(xhr.address.upload){
+						xhr.address.onload = function(e){
+							if(success){
+								success(e);
+							}
+						};
+						xhr.address.onerror = function(e){
+							if(failure){
+								failure(e);
+							}
+						}
+						xhr.address.open(type, address, true);
+						if(requestHeaders){
+							for(header in requestHeaders){
+								xhr.address.setRequestHeader(header, requestHeaders[header]);
+							}
+						}
+						if(responseType){
+							xhr.address.responseType = responseType;
+						}
+						xhr.address.send(data);
+					} else {
+						if(failure){
+							failure();
+						}
+					}
+				} else {
+					if(failure){
+						failure();
+					}
+				}
+			},
+			ab2str:function(buf) {
+				// credit to http://stackoverflow.com/users/1429114/mangini
+				// http://stackoverflow.com/a/11058858/1734964
+				return String.fromCharCode.apply(null, new Uint16Array(buf));
+			},
+			str2ab:function(str) {
+				// credit to http://stackoverflow.com/users/1429114/mangini
+				// http://stackoverflow.com/a/11058858/1734964
+				var buf = new ArrayBuffer(str.length*2);
+				var bufView = new Uint16Array(buf);
+				for (var i=0, strLen=str.length; i<strLen; i++) {
+					bufView[i] = str.charCodeAt(i);
+				}
+				return buf;
 			}
 		}
 	};
