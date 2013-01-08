@@ -76,7 +76,7 @@
 					console.log(value);
 				} else {
 					try{
-						console.log(ab2str(value));
+						console.log(filesystem.support.ab2str(value));
 					} catch(e) {
 						console.warn("could not decipher value from", value);
 					}
