@@ -53,6 +53,13 @@ Any method that takes `success` and/or `failure` parameters requires these to be
 
 * `filesystem.url.get(path, success)` - get the URL of a file from a path
 * `filesystem.url.resolve(url, success)` - resolve the URL of a file into a path
+* `filesystem.url.relative(path)` - can't remember why I made this
+
+**Server**
+
+* `filesystem.server.upload(local, remote, [success, [failure]])` - upload a file from the FileSystem to your server
+* `filesystem.server.download(remote, local, [success, [failure]])` - download a file from your server to the FileSystem
+* `filesystem.server.multi(direction, files, directory, [success, [failure]])` - transfer multiple files between your server and the FileSystem
 
 **Settings**
 
@@ -68,7 +75,15 @@ Any method that takes `success` and/or `failure` parameters requires these to be
 * `filesystem.support.listResults(entries, dir)`* - output the results of `filesystem.directory.read()` to the webpage
 * `filesystem.support.upload(dir, file, elem, [success, [failure]])`* - this method actually performs the upload, called by `filesystem.file.upload()`
 * `filesystem.support.multiPartUpload(dir, file, [success, [failure]])`* - if the file size is bigger than `filesystem.maxChunk` this function is called by ``filesystem.support.upload()`
+* `filesystem.support.dragOver(evt)`* - 
+* `filesystem.support.drop(evt, dir, [success, [failure]])`* - 
 * `filesystem.support.filetypeSearch(ext)`* - searches registered filetypes and returns the mime or false
+* `filesystem.support.roundTo(number, decimals)`* - rounds `number` to `decimals` decimal places
+* `filesystem.support.urlencode(str)`* - makes `str` URL-safe
+* `filesystem.support.urldecode(str)`* - decodes a URL-safe string `str`
+* `filesystem.support.ajax(type, address, data, [success, [failure,]] [responseType,] [requestHeaders])`* - performs AJAX calls
+* `filesystem.support.ab2str(buf)`* - converts ArrayBuffer `buf` into a string
+* `filesystem.support.str2ab(str)`* - converts string `str` into an ArrayBuffer
 
 **Extras** - not part of the `filesystem` object
 
@@ -78,11 +93,6 @@ Any method that takes `success` and/or `failure` parameters requires these to be
 
 ## To Do ##
 
-* Transfer files between server and FileSystem
-* Look into ZIP formatting for whole directory and multi-file actions
-    * uploads
-    * downloads
-    * server transfers
 * Investigate any other methods that are needed/could be helpful
 
 ## License ##
