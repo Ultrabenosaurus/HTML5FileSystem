@@ -2,11 +2,9 @@
 
 A JavaScript object to make interacting with the HTML5 FileSystem API super-easy!
 
-If you just plan to use this library without modifications, go to the [downloads section](https://github.com/Ultrabenosaurus/HTML5FileSystem/downloads) to get a compiled copy of the latest stable release.
+To use this library please either clone, [fork](https://github.com/Ultrabenosaurus/HTML5FileSystem/fork) or [download](https://github.com/Ultrabenosaurus/HTML5FileSystem/archive/master.zip) this repo.
 
 ## Notes ##
-
-`filesystem.server.multi()` currently cannot handle downloads properly. Uploads seem to work fine though.
 
 All paths should be from root, not relative, unless a `dir` parameter is required in which case all other paths should be relative to `dir`. Also, all paths should be provided as strings, not DirectoryEntry objects.
 
