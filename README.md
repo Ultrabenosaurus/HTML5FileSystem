@@ -53,7 +53,6 @@ Any method that takes `success` and/or `failure` parameters requires these to be
 
 * `filesystem.url.get(path, success)` - get the URL of a file from a path
 * `filesystem.url.resolve(url, success)` - resolve the URL of a file into a path
-* `filesystem.url.relative(path)` - can't remember why I made this
 
 **Server**
 

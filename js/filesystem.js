@@ -445,13 +445,6 @@ function FileSystem(){
 				}, function(e){
 					filesystem.errorHandler(e);
 				});
-			},
-			relative:function(path){
-				var a = document.createElement('a');
-				a.href = path;
-				temp = a.href;
-				a = null;
-				return temp;
 			}
 		},
 		server:{
