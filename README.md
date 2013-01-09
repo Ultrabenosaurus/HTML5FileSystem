@@ -60,7 +60,6 @@ Any method that takes `success` and/or `failure` parameters requires these to be
 
 * `filesystem.server.upload(local, remote, [success, [failure]])` - upload a file from the FileSystem to your server
 * `filesystem.server.download(remote, local, [success, [failure]])` - download a file from your server to the FileSystem
-* `filesystem.server.multi(direction, files, directory, [success, [failure]])` - transfer multiple files between your server and the FileSystem
 
 **Settings**
 

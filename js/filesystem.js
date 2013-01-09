@@ -473,18 +473,6 @@ function FileSystem(){
 				filesystem.support.ajax("GET", remote, null, function(e){
 					filesystem.file.write(local+fname, e.target.response, success, failure);
 				}, failure, 'blob', null);
-			},
-			multi:function(direction, files, directory, success, failure){
-				for(var i = 0, file; file = files[i]; i++){
-					switch(direction){
-						case 'upload':
-							filesystem.server.upload(file, directory, success, failure);
-							break;
-						case 'download':
-							filesystem.server.download(file, directory, success, failure);
-							break;
-					}
-				}
 			}
 		},
 		settings:{
