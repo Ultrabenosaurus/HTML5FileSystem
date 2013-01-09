@@ -6,6 +6,8 @@ If you just plan to use this library without modifications, go to the [downloads
 
 ## Notes ##
 
+`filesystem.server.multi()` currently cannot handle downloads properly. Uploads seem to work fine though.
+
 All paths should be from root, not relative, unless a `dir` parameter is required in which case all other paths should be relative to `dir`. Also, all paths should be provided as strings, not DirectoryEntry objects.
 
 Any method that takes `success` and/or `failure` parameters requires these to be valid callbacks, as the underlying API methods return `void` and rely on callbacks themselves so no natural return is possible.
