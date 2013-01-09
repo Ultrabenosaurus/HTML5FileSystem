@@ -15,85 +15,74 @@
 	ul:not([id='filelist']) li:before{
 		content: "- ";
 	}
+	ul:not([id='filelist']) li{
+		display: none;
+	}
 	#container{
-		width: 1000px;
+		width: 600px;
 		margin: 0 auto;
 	}
-	#left{
-		float: left;
-		width: 29%;
+	#filesDrag{
+		height: 100px;
+		width: 100%;
+		background-color: #EEE;
 	}
-	#right{
-		float: right;
-		width: 70%;
+	.filesystem_progress{
+		margin: 1px 0 1px 0;
+		height: 5px;
+		background-color: #2cc0d5;
+	}
+	.filesystem_progress.complete{
+		background-color: #63e44f;
+	}
+	.filesystem_progress.error{
+		background-color: #f53f16;
 	}
 	</style>
 	<title>Filesystem API</title>
 </head>
 	<body>
 		<div id='container'>
-			<div id='left'>
-				<input type='file' id='files1' name='files1[]' multiple />
-				<input type='file' id='files1' name='files1[]' multiple />
-				<input type='file' id='files1' name='files1[]' multiple />
-				<ul id='filelist'></ul>
-			</div>
-			<div id='right'>
-				<p>Test this library by using your browsers console.</p>
-				<p>Commands:
-					<ul>Generic - only <code>request</code> is meant to be called directly
-						<li><code>filesystem.request(type, [size])</code> - request a FileSystem allocation</li>
-						<li><code>filesystem.clear()</code> - deletes ALL files and directories in the FileSystem</li>
-						<li><code>filesystem.init(fs)</code> - set initial variables, read root directory</li>
-						<li><code>filesystem.errorHandler(e)</code> - process errors (default: send to console)</li>
-					</ul>
-					<ul>Directory
-						<li><code>filesystem.directory.create(path)</code> - create a directory path recursively</li>
-						<li><code>filesystem.directory.delete(path)</code> - recursively delete all files and directories along the path</li>
-						<li><code>filesystem.directory.read(path)</code> - read the given path</li>
-						<li><code>filesystem.directory.copy(source, destination)</code> - copy a directory</li>
-						<li><code>filesystem.directory.move(source, destination)</code> - move a directory</li>
-						<li><code>filesystem.directory.rename(dir, old, new)</code> - rename a directory</li>
-						<li><code>filesystem.directory.properties(path, success)</code> - get the metadata of a directory</li>
-					</ul>
-					<ul>File
-						<li><code>filesystem.file.create(path)</code> - create a file, including its directory path</li>
-						<li><code>filesystem.file.delete(path)</code> - delete the file specified by path</li>
-						<li><code>filesystem.file.read(path, success)</code> - read a stored text file and return its contents</li>
-						<li><code>filesystem.file.write(path, data, success, [append])</code> - write to a text file</li>
-						<li><code>filesystem.file.copy(source, destination)</code> - copy a file</li>
-						<li><code>filesystem.file.move(source, destination)</code> - move a file</li>
-						<li><code>filesystem.file.rename(dir, old, new)</code> - rename a file</li>
-						<li><code>filesystem.file.upload(name, dir, [success, [failure]])</code> - upload one or more files to the FileSystem</li>
-						<li><code>filesystem.file.download(path)</code> - force a file in the FileSystem to be downloaded (Chrome only)</li>
-						<li><code>filesystem.file.properties(path, success)</code> - get the metadata of a file</li>
-					</ul>
-					<ul>URL
-						<li><code>filesystem.url.get(path, success)</code> - get the URL of a file from a path</li>
-						<li><code>filesystem.url.resolve(url, success)</code> - resolve the URL of a file into a path</li>
-					</ul>
-					<ul>Support - not meant to be called directly
-						<li><code>filesystem.support.toArray(list)</code> - convert an object to an array</li>
-						<li><code>filesystem.support.listResults(entries, dir)</code> - output the results of <code>filesystem.directory.read()</code> to the webpage</li>
-						<li><code>filesystem.support.upload(dir, file, [success, [failure]])</code> - this method actually performs the upload, called by <code>filesystem.file.upload()</code></li>
-					</ul>
-					All paths should be from root, not relative, unless a <code>dir</code> parameter is required in which case all other paths should be relative to <code>dir</code>.<br />
-					All paths should be provided as strings, not DirectoryEntry objects.<br />
-					Any method that takes <code>success</code> and/or <code>failure</code> parameters requires these to be valid callbacks, as the underlying API methods return <code>void</code> and rely on callbacks themselves so no natural return is possible.
-				</p>
-				<p>To Do:
-					<ul>
-						<li>Improve <code>filesystem.errorHandler(e)</code></li>
-						<li>Add support for reading/writing other filetypes (for apps like web-based image editors)
-							<ul>
-								<li>Code this in a way that will allow others to easily add new definitions</li>
-							</ul>
-						</li>
-						<li>Investigate any other methods that are needed/could be helpful</li>
-					</ul>
-				</p>
-			</div>
+			<input type='file' id='files1' name='files1[]' multiple /><br />
+			<input type='file' id='files1' name='files1[]' multiple /><br />
+			<input type='file' id='files1' name='files1[]' multiple /><br />
+			<div id='filesDrag'></div>
+			<ul id='filelist'></ul>
 		</div>
 	</body>
 	<script src='js/filesystem.js'></script>
+	<script type='text/javascript'>
+	var success = function(value){
+		if(value){
+			if(value.target){
+				text = value.target.result || value.target.response;
+				try{
+					text = JSON.parse(filesystem.support.urldecode(text));
+					if(text.result && text.uri && text.result == 'success'){
+						console.log(filesystem.url.relative(text.uri));
+					} else {
+						console.log(text);
+					}
+				} catch(e) {
+					try{
+						text = filesystem.support.urldecode(text);
+					} catch(e) {
+						text = text;
+					}
+					console.log(text);
+				}
+			} else {
+				if(value.toString){
+					console.log(value);
+				} else {
+					try{
+						console.log(filesystem.support.ab2str(value));
+					} catch(e) {
+						console.warn("could not decipher value from", value);
+					}
+				}
+			}
+		}
+	};
+	</script>
 </html>
