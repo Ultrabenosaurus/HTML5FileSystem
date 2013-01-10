@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>HTML5FileSystem by Ultrabenosaurus</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>HTML5FileSystem</h1>
+        <h2>A JavaScript object to make interacting with the HTML5 FileSystem API super-easy!</h2>
+        <a href="https://github.com/Ultrabenosaurus/HTML5FileSystem" class="button"><small>View project on</small>GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>FileSystem</h1>
+
+<p>A JavaScript object to make interacting with the HTML5 FileSystem API super-easy!</p>
+
+<p>To use this library please either clone, <a href="https://github.com/Ultrabenosaurus/HTML5FileSystem/fork">fork</a> or <a href="https://github.com/Ultrabenosaurus/HTML5FileSystem/archive/master.zip">download</a> this repo.</p>
+
+<h2>Notes</h2>
+
+<p>All paths should be from root, not relative, unless a <code>dir</code> parameter is required in which case all other paths should be relative to <code>dir</code>. Also, all paths should be provided as strings, not DirectoryEntry objects.</p>
+
+<p>Any method that takes <code>success</code> and/or <code>failure</code> parameters requires these to be valid callbacks, as the underlying API methods return <code>void</code> and rely on callbacks themselves so no natural return is possible.</p>
+
+<p>*Commands marked with an asterisk are not meant to be called directly.</p>
+
+<h2>Commands</h2>
+
+<h3>Implemented</h3>
+
+<p><strong>Generic</strong></p>
+
+<ul>
+<li>
+<code>filesystem.request(type, [size])</code> - request a FileSystem allocation</li>
+<li>
+<code>filesystem.clear()</code> - deletes ALL files and directories in the FileSystem</li>
+<li>
+<code>filesystem.init(fs)</code>* - set initial variables, read root directory</li>
+<li>
+<code>filesystem.errorHandler(e)</code>* - process errors (default: send to console)</li>
+</ul><p><strong>Directory</strong></p>
+
+<ul>
+<li>
+<code>filesystem.directory.create(path)</code> - create a directory path recursively</li>
+<li>
+<code>filesystem.directory.delete(path)</code> - recursively delete all files and directories along the path</li>
+<li>
+<code>filesystem.directory.read(path, [success])</code> - read the given path</li>
+<li>
+<code>filesystem.directory.empty(path)</code> - delete all files and directories in the given path</li>
+<li>
+<code>filesystem.directory.copy(source, destination)</code> - copy a directory</li>
+<li>
+<code>filesystem.directory.move(source, destination)</code> - move a directory</li>
+<li>
+<code>filesystem.directory.rename(dir, old, new)</code> - rename a directory</li>
+<li>
+<code>filesystem.directory.properties(path, success)</code> - get the metadata of a directory</li>
+</ul><p><strong>File</strong></p>
+
+<ul>
+<li>
+<code>filesystem.file.create(path)</code> - create a file, including its directory path</li>
+<li>
+<code>filesystem.file.delete(path)</code> - delete the file specified by path</li>
+<li>
+<code>filesystem.file.read(path, success)</code> - read a stored text file and return its contents</li>
+<li>
+<code>filesystem.file.write(path, data, success, [append])</code> - write to a text file
+
+<ul>
+<li>attempt to create file if it doesn't exist</li>
+<li>optional <code>append</code> parameter, set to <code>true</code> to append</li>
+</ul>
+</li>
+<li>
+<code>filesystem.file.copy(source, destination)</code> - copy a file</li>
+<li>
+<code>filesystem.file.move(source, destination)</code> - move a file</li>
+<li>
+<code>filesystem.file.rename(dir, old, new)</code> - rename a file</li>
+<li>
+<code>filesystem.file.upload(name, dir, [success, [failure]])</code> - upload one or more local files to the FileSystem</li>
+<li>
+<code>filesystem.file.download(path)</code> - force a file in the FileSystem to be downloaded (Chrome only)</li>
+<li>
+<code>filesystem.file.properties(path, success)</code> - get the metadata of a file</li>
+</ul><p><strong>URL</strong></p>
+
+<ul>
+<li>
+<code>filesystem.url.get(path, success)</code> - get the URL of a file from a path</li>
+<li>
+<code>filesystem.url.resolve(url, success)</code> - resolve the URL of a file into a path</li>
+</ul><p><strong>Server</strong></p>
+
+<ul>
+<li>
+<code>filesystem.server.upload(local, remote, [success, [failure]])</code> - upload a file from the FileSystem to your server</li>
+<li>
+<code>filesystem.server.download(remote, local, [success, [failure]])</code> - download a file from your server to the FileSystem</li>
+</ul><p><strong>Settings</strong></p>
+
+<ul>
+<li>
+<code>filesystem.settings.setQuota(bytes)</code> - set a custom storage quota before making a request</li>
+<li>
+<code>filesystem.settings.setMaxChunk(bytes)</code> - set a custom chunk size for multi-part uploads</li>
+<li>
+<code>filesystem.settings.storage([success])</code> - returns current usage values</li>
+<li>
+<code>filesystem.settings.registerFiletypes(options)</code> - adds mime and filetypes for use with reading/writing files</li>
+<li>
+<code>filesystem.settings.getFiletypes()</code> - returns current filetype list</li>
+</ul><p><strong>Support</strong></p>
+
+<ul>
+<li>
+<code>filesystem.support.toArray(list)</code>* - convert an object to an array</li>
+<li>
+<code>filesystem.support.listResults(entries, dir)</code>* - output the results of <code>filesystem.directory.read()</code> to the webpage</li>
+<li>
+<code>filesystem.support.upload(dir, file, elem, [success, [failure]])</code>* - this method actually performs the upload, called by <code>filesystem.file.upload()</code>
+</li>
+<li>
+<code>filesystem.support.multiPartUpload(dir, file, [success, [failure]])</code>* - if the file size is bigger than <code>filesystem.maxChunk</code> this function is called by `<code>filesystem.support.upload()</code>
+</li>
+<li>
+<code>filesystem.support.dragOver(evt)</code>* - </li>
+<li>
+<code>filesystem.support.drop(evt, dir, [success, [failure]])</code>* - </li>
+<li>
+<code>filesystem.support.filetypeSearch(ext)</code>* - searches registered filetypes and returns the mime or false</li>
+<li>
+<code>filesystem.support.roundTo(number, decimals)</code>* - rounds <code>number</code> to <code>decimals</code> decimal places</li>
+<li>
+<code>filesystem.support.urlencode(str)</code>* - makes <code>str</code> URL-safe</li>
+<li>
+<code>filesystem.support.urldecode(str)</code>* - decodes a URL-safe string <code>str</code>
+</li>
+<li>
+<code>filesystem.support.ajax(type, address, data, [success, [failure,]] [responseType,] [requestHeaders])</code>* - performs AJAX calls</li>
+<li>
+<code>filesystem.support.ab2str(buf)</code>* - converts ArrayBuffer <code>buf</code> into a string</li>
+<li>
+<code>filesystem.support.str2ab(str)</code>* - converts string <code>str</code> into an ArrayBuffer</li>
+</ul><p><strong>Extras</strong> - not part of the <code>filesystem</code> object</p>
+
+<ul>
+<li>
+<code>Array.prototype.forEach(fn, scope)</code>* - runs function <code>fn</code> for each item in the array</li>
+<li>
+<code>Array.prototype.contains(term)</code>* - returns true if <code>term</code> is found, or false</li>
+<li>
+<code>Array.prototype.find(term)</code>* - returns index of <code>term</code> if found, or false</li>
+</ul><h2>To Do</h2>
+
+<ul>
+<li>Investigate any other methods that are needed/could be helpful</li>
+</ul><h2>License</h2>
+
+<p>As usual with my work, this project is available under the BSD 3-Clause license. In short, you can do whatever you want with this code as long as:</p>
+
+<ul>
+<li>I am always recognised as the original author.</li>
+<li>I am not used to advertise any derivative works without prior permission.</li>
+<li>You include a copy of said license and attribution with any and all redistributions of this code, including derivative works.</li>
+</ul><p>For more details, read the included <a href="https://github.com/Ultrabenosaurus/HTML5FileSystem/blob/master/LICENSE.md">LICENSE.md</a> file or read about it on <a href="http://opensource.org/licenses/BSD-3-Clause">opensource.org</a>.</p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/Ultrabenosaurus/HTML5FileSystem/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/Ultrabenosaurus/HTML5FileSystem/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/Ultrabenosaurus/HTML5FileSystem"></a> is maintained by <a href="https://github.com/Ultrabenosaurus">Ultrabenosaurus</a>.</p>
+
+          <p>This page was generated by <a href="pages.github.com">GitHub Pages</a> using the Architect theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
