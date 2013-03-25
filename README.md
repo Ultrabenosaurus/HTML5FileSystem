@@ -10,9 +10,9 @@ All paths should be from root, not relative, unless a `dir` parameter is require
 
 Any method that takes `success` and/or `failure` parameters requires these to be valid callbacks, as the underlying API methods return `void` and rely on callbacks themselves so no natural return is possible.
 
-*Commands marked with an asterisk are not meant to be called directly.
-
 ## Commands ##
+
+*Commands marked with an asterisk are not meant to be called directly.
 
 ### Implemented ###
 
